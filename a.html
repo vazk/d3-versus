@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+
+
+
+<div class="Aligner">
+  <div class="Aligner-item Aligner-item--top"></div>
+  <div id="div_svg" class="Aligner-item"></div>
+  <div class="Aligner-item Aligner-item--bottom"></div>
+</div>
+
+
+<link rel="stylesheet" type="text/css" href="a.css">
+<script src="../lib/d3/d3.js"></script>
+<script src="../d3.layout.cloud.js"></script>
+<script>
+  var fill = d3.scale.category20();
+
+
+  var svg_height = 500;
+  var svg_width = 800;
+
+  var div_svg = d3.select("#div_svg");
+  var svg = div_svg.append("svg");
+
+
+  d3.layout.cloud().size([svg_width, svg_height])
+      .vs_bins([
+        "Hello", "world", "normally", "you", "want", "more", "words",
+        "than", "this"].map(function(d) {
+        return {text: d, size: 10 + Math.random() * 90};
+      }))
+      .padding(5)
+      .rotate(function() { return 0;})
+      .font("Impact")
+      .fontSize(function(d) { return d.size; })
+      .on("end", draw)
+      .start();
+
+  function draw(vs_bins) {
+    var borderPath = svg.append("rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("height", svg_height)
+      .attr("width", svg_width)
+      .style("stroke", "green")
+      .style("fill", "none")
+      .style("stroke-width", 2);
+
+    svg.attr("width",  svg_width)
+       .attr("height", svg_height)
+      .append("g")
+        .attr("transform", "translate("+svg_width/2+","+svg_height/2+")")
+      .selectAll("text")
+        .data(vs_bins)
+          .enter().append("vsRect")
+            .style("font-size", function(d) { return d.size + "px"; })
+            .style("font-family", "Impact")
+            .style("fill", function(d, i) { return fill(i); })
+            .attr("text-anchor", "middle")
+            .attr("transform", function(d) {
+              return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+            })
+            .text(function(d) { return d.text; });
+  }
+</script>
+</body>
