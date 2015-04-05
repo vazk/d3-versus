@@ -12,8 +12,8 @@
 
 
 <link rel="stylesheet" type="text/css" href="a.css">
-<script src="../lib/d3/d3.js"></script>
-<script src="../d3.layout.cloud.js"></script>
+<script src="lib/d3/d3.js"></script>
+<script src="js/d3.layout.cloud.js"></script>
 <script>
   var fill = d3.scale.category20();
 
@@ -28,13 +28,13 @@
   d3.layout.cloud().size([svg_width, svg_height])
       .vs_bins([
         "Hello", "world", "normally", "you", "want", "more", "words",
-        "than", "this"].map(function(d) {
-        return {text: d, size: 10 + Math.random() * 90};
+        "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
+         "Hello", "world", "normally", "you", "want", "more", "words",
+         "Hello", "world", "normally", "you", "want", "more", "words",
+         "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
+        return {rect: d, dim: 50 + Math.random() * 130};
       }))
       .padding(5)
-      .rotate(function() { return 0;})
-      .font("Impact")
-      .fontSize(function(d) { return d.size; })
       .on("end", draw)
       .start();
 
@@ -48,21 +48,28 @@
       .style("fill", "none")
       .style("stroke-width", 2);
 
+    var colorScaleLin = d3.scale.linear()
+      .domain([0, 50])
+      .interpolate(d3.interpolateRgb)
+      .range(['red', 'green']);
+ 
+    var colorScalePow = d3.scale.pow().exponent(.6)
+      .domain([0, 50])
+      .interpolate(d3.interpolateRgb)
+      .range(['red', 'green']);
+
     svg.attr("width",  svg_width)
        .attr("height", svg_height)
       .append("g")
-        .attr("transform", "translate("+svg_width/2+","+svg_height/2+")")
-      .selectAll("text")
+        //.attr("transform", "translate("+svg_width/2+","+svg_height/2+")")
+      .selectAll("rect")
         .data(vs_bins)
-          .enter().append("vsRect")
-            .style("font-size", function(d) { return d.size + "px"; })
-            .style("font-family", "Impact")
-            .style("fill", function(d, i) { return fill(i); })
-            .attr("text-anchor", "middle")
-            .attr("transform", function(d) {
-              return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-            })
-            .text(function(d) { return d.text; });
+          .enter().append("rect")
+            .attr("x", function(d) { console.log(" rect: ",d.x,",",d.y,",",d.w,",",d.h); return d.x; })
+            .attr("y", function(d) { return d.y; })
+            .attr("width", function(d) { return d.w; })
+            .attr("height", function(d) { return d.h; })
+            .attr("fill", function(d, i) { return colorScaleLin(i)});
   }
 </script>
 </body>
