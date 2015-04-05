@@ -40,10 +40,14 @@
               d.x = (size[0] * (Math.random() + .5)) >> 1;
               d.y = (size[1] * (Math.random() + .5)) >> 1;
               console.log("STEP: ", d.text, ", ", d.x, ", ", d.y,", ",d.w,", ",d.h);
-              board.push({"x":d.x,"y":d.y,"w":d.w,"h":d.h});
-              tags.push(d);
-              if (bounds) cloudBounds(bounds, d);
-              else bounds = [{x: d.x + d.x0, y: d.y + d.y0}, {x: d.x + d.x1, y: d.y + d.y1}];
+              if(place(board, d, bounds)) {
+                  tags.push(d);
+                  if (bounds) cloudBounds(bounds, d);
+                  else bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
+                  // Temporary hack
+                  d.x -= size[0] >> 1;
+                  d.y -= size[1] >> 1;
+              }
           }
           if (i >= n) {
               cloud.stop();
@@ -66,7 +70,6 @@
       return cloud;
     };
 
-    /*
     function place(board, tag, bounds) {
       var perimeter = [{x: 0, y: 0}, {x: size[0], y: size[1]}],
           startX = tag.x,
@@ -88,20 +91,21 @@
         tag.x = startX + dx;
         tag.y = startY + dy;
 
-        if (tag.x + tag.x0 < 0 || tag.y + tag.y0 < 0 ||
-            tag.x + tag.x1 > size[0] || tag.y + tag.y1 > size[1]) continue;
+        if (tag.x < 0 || tag.y < 0 ||
+            tag.x + tag.w > size[0] || tag.y + tag.h > size[1]) continue;
         // TODO only check for collisions within current bounds.
         if (!bounds || !cloudCollide(tag, board, size[0])) {
-          if (!bounds || collideRects(tag, bounds)) {
+          if (!bounds || !collideRects(tag, bounds)) {
             board.push({"x":tag.x,"y":tag.y,"w":tag.w,"h":tag.h});
-            console.log("   ", board);
+            console.log("   board: ", board);
             return true;
           }
         }
       }
       return false;
     }
-*/
+
+
     cloud.vs_bins = function(x) {
       if (!arguments.length) return vs_bins;
       vs_bins = x;
@@ -150,7 +154,7 @@
   }
 
   function interval_overlap(l1, h1, l2, h2) {
-      if(l1 < h2 && l2 > h1) return true;
+      if(l1 < h2 && l2 < h1) return true;
       return false;
   }
 
@@ -171,15 +175,16 @@
   function cloudBounds(bounds, d) {
       var b0 = bounds[0],
           b1 = bounds[1];
-      if (d.x < b0.x) b0.x = d.x + d.x0;
-      if (d.y < b0.y) b0.y = d.y + d.y0;
+      if (d.x < b0.x) b0.x = d.x;
+      if (d.y < b0.y) b0.y = d.y;
       if (d.x + d.w > b1.x) b1.x = d.x + d.w;
       if (d.y + d.h > b1.y) b1.y = d.y + d.h;
+      console.log("BOUNDS: ",b0.x,", ",b0.y,", ",b1.x,", ",b1.y);
   }
 
   function collideRects(a, b) {
-      return a.x + a.w > b[0].x && a.x < b[1].x && 
-             a.y + a.h > b[0].y && a.y < b[1].y;
+      return a.x > b[0].x && a.x + a.w < b[1].x && 
+             a.y > b[0].y && a.y + a.h < b[1].y;
   }
 
   function archimedeanSpiral(size) {
