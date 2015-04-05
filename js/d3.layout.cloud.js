@@ -24,7 +24,7 @@
             d.w = d.dim;
             d.h = d.dim*0.5;
             return d;
-          }).sort(function(a, b) { return b.size - a.size; });
+          }).sort(function(a, b) { return b.dim - a.dim; });
 
       if (timer) clearInterval(timer);
       timer = setInterval(step, 0);
@@ -37,8 +37,8 @@
           var d;
           while (+new Date - start < timeInterval && ++i < n && timer) {
               d = data[i];
-              d.x = (size[0] * (Math.random() + .5)) >> 1;
-              d.y = (size[1] * (Math.random() + .5)) >> 1;
+              d.x = (size[0]>>1) + (Math.random() *30);
+              d.y = (size[1]>>1) + (Math.random() *30);
               console.log("STEP: ", d.text, ", ", d.x, ", ", d.y,", ",d.w,", ",d.h);
               if(place(board, d, bounds)) {
                   tags.push(d);
