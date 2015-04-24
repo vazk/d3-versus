@@ -39,7 +39,7 @@
               d = data[i];
               d.x = (size[0]>>1) + (Math.random() *30);
               d.y = (size[1]>>1) + (Math.random() *30);
-              console.log("STEP: ", d.text, ", ", d.x, ", ", d.y,", ",d.w,", ",d.h);
+              //console.log("STEP: ", d.text, ", ", d.x, ", ", d.y,", ",d.w,", ",d.h);
               if(place(board, d, bounds)) {
                   tags.push(d);
                   if (bounds) cloudBounds(bounds, d);
@@ -97,7 +97,7 @@
         if (!bounds || !cloudCollide(tag, board, size[0])) {
           if (!bounds || !collideRects(tag, bounds)) {
             board.push({"x":tag.x,"y":tag.y,"w":tag.w,"h":tag.h});
-            console.log("   board: ", board);
+            //console.log("   board: ", board);
             return true;
           }
         }
@@ -179,7 +179,7 @@
       if (d.y < b0.y) b0.y = d.y;
       if (d.x + d.w > b1.x) b1.x = d.x + d.w;
       if (d.y + d.h > b1.y) b1.y = d.y + d.h;
-      console.log("BOUNDS: ",b0.x,", ",b0.y,", ",b1.x,", ",b1.y);
+      //console.log("BOUNDS: ",b0.x,", ",b0.y,", ",b1.x,", ",b1.y);
   }
 
   function collideRects(a, b) {
