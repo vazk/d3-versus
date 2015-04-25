@@ -24,14 +24,14 @@
   var div_svg = d3.select("#div_svg");
   var svg = div_svg.append("svg");
 
-  svg.style("background","#2E182C");
+  svg.style("background","white");
 
   var vs_data = [
         "Hello", "world", "normally", "you", "want", "more", "words",
         "Hello", "world", "normally", "you", "want", "more", "words",
         "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
          "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
-        return {text: d, dim: 30 + Math.random() * 160};
+        return {text: d, dim: 80 + Math.random() * 80};
       });
 
   d3.layout.cloud().size([svg_width, svg_height])
@@ -39,6 +39,27 @@
       .padding(5)
       .on("end", draw)
       .start();
+
+  function onMouseIn(d) {
+      d3.select(this)
+          .transition()
+          .duration(300)
+          .attr('x', d.x-10)
+          .attr('y', d.y-10)
+          .attr('width', d.w+20)
+          .attr('height', d.h+20);
+  }
+
+  function onMouseOut(d) {
+      d3.select(this)
+          .transition()
+          .duration(300)
+          .attr('x', d.x)
+          .attr('y', d.y)
+          .attr('width', d.w)
+          .attr('height', d.h);
+  }
+
 
   function draw(vs_bins) {
       var borderPath = svg.append("rect")
@@ -82,7 +103,7 @@
       vs_rects = g.selectAll("rect")
                   .data(vs_bins)
                     .enter();
-      vs_rects.append("svg:image")
+      /*vs_rects.append("svg:image")
                 .attr("x", function(d) { console.log("img: ", d); return d.x+2; })
                 .attr("y", function(d) { return d.y+2; })
                 .attr("width", function(d) { return (d.w-4)/2-1; })
@@ -93,7 +114,7 @@
                 .attr("y", function(d) { return d.y+2; })
                 .attr("width", function(d) { return (d.w-4)/2-1; })
                 .attr("height", function(d) { return d.h-4; })
-                .attr("xlink:href","vs-ss.png");
+                .attr("xlink:href","vs-ss.png");*/
       vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x+2; })
               .attr("y", function(d) { return d.y+2; })
@@ -103,7 +124,9 @@
               .attr("height", function(d) { return d.h-2; })
               .style("stroke", "url(#gradient)")
               .style("stroke-width", 2)
-              .attr("fill", "none");
+              .attr("fill", "transparent")
+              .on("mouseover", onMouseIn)
+              .on("mouseout", onMouseOut);
   }
 </script>
 </body>
