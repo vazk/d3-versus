@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <meta charset="utf-8">
 <body>
 
@@ -14,6 +15,7 @@
 <link rel="stylesheet" type="text/css" href="a.css">
 <script src="lib/d3/d3.js"></script>
 <script src="js/d3.layout.cloud.js"></script>
+<script src="js/imgur.js"></script>
 <script>
   var fill = d3.scale.category20();
 
@@ -26,40 +28,61 @@
 
   svg.style("background","white");
 
-  var vs_data = [
-        "Hello", "world", "normally", "you", "want", "more", "words",
-        "Hello", "world", "normally", "you", "want", "more", "words",
-        "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
-         "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
-        return {text: d, dim: 80 + Math.random() * 80};
-      });
-
-  d3.layout.cloud().size([svg_width, svg_height])
-      .vs_bins(vs_data)
-      .padding(5)
-      .on("end", draw)
-      .start();
 
   function onMouseIn(d) {
-      d3.select(this)
+    var i = d3.select(this);
+    i.select("rect")
           .transition()
-          .duration(300)
-          .attr('x', d.x-10)
-          .attr('y', d.y-10)
-          .attr('width', d.w+20)
-          .attr('height', d.h+20);
+          .duration(200)
+          .attr('x', d.x-16)
+          .attr('y', d.y-8)
+          .attr('width', d.w+32)
+          .attr('height', d.h+16);
+
+    i.select(".vs-img-left")
+          .transition()
+          .duration(200)
+          .attr('x', d.x-14)
+          .attr('y', d.y-6)
+          .attr('width', (d.w+28)/2-1)
+          .attr('height', d.h+12);
+
+    i.select(".vs-img-right")
+          .transition()
+          .duration(200)
+          .attr('x', d.x-14 + (d.w+28)/2)
+          .attr('y', d.y-6)
+          .attr('width', (d.w+28)/2-1)
+          .attr('height', d.h+12);
+    i.moveToFront();
   }
 
   function onMouseOut(d) {
-      d3.select(this)
+    var i = d3.select(this);
+    i.select("rect")
           .transition()
-          .duration(300)
+          .duration(200)
           .attr('x', d.x)
           .attr('y', d.y)
           .attr('width', d.w)
           .attr('height', d.h);
-  }
 
+    i.select(".vs-img-left")
+          .transition()
+          .duration(200)
+          .attr('x', d.x+2)
+          .attr('y', d.y+2)
+          .attr('width', (d.w-4)/2-1)
+          .attr('height', d.h-4);
+
+    i.select(".vs-img-right")
+          .transition()
+          .duration(200)
+          .attr('x', d.x+4 + (d.w-4)/2)
+          .attr('y', d.y+2)
+          .attr('width', (d.w-4)/2-1)
+          .attr('height', d.h-4);
+  }
 
   function draw(vs_bins) {
       var borderPath = svg.append("rect")
@@ -102,19 +125,24 @@
 
       vs_rects = g.selectAll("rect")
                   .data(vs_bins)
-                    .enter();
-      /*vs_rects.append("svg:image")
+                    .enter()
+                      .append("g")
+                        .on("mouseover", onMouseIn)
+                        .on("mouseout", onMouseOut);
+      vs_rects.append("svg:image")
                 .attr("x", function(d) { console.log("img: ", d); return d.x+2; })
                 .attr("y", function(d) { return d.y+2; })
                 .attr("width", function(d) { return (d.w-4)/2-1; })
                 .attr("height", function(d) { return d.h-4; })
-                .attr("xlink:href","vs-dg.png");
+                .attr("xlink:href",function(d) { return d.imgleft; })
+                .attr('class', 'vs-img-left');
       vs_rects.append("svg:image")
                 .attr("x", function(d) { console.log("img: ", d); return d.x+4 + (d.w-4)/2; })
                 .attr("y", function(d) { return d.y+2; })
                 .attr("width", function(d) { return (d.w-4)/2-1; })
                 .attr("height", function(d) { return d.h-4; })
-                .attr("xlink:href","vs-ss.png");*/
+                .attr("xlink:href",function(d) { return d.imgright; })
+                .attr('class', 'vs-img-right');
       vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x+2; })
               .attr("y", function(d) { return d.y+2; })
@@ -123,10 +151,32 @@
               .attr("width", function(d) { return d.w-2; })
               .attr("height", function(d) { return d.h-2; })
               .style("stroke", "url(#gradient)")
-              .style("stroke-width", 2)
-              .attr("fill", "transparent")
-              .on("mouseover", onMouseIn)
-              .on("mouseout", onMouseOut);
+              .style("stroke-width", 4)
+              .attr("fill", "transparent");
   }
+
+  function startAll() {
+    var iid = 0;
+    var vs_data = [
+          "Hello", "world", "normally", "you", "want", "more", "words",
+          "Hello", "world", "normally", "you", "want", "more", "words",
+          "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
+           "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
+          return {text: d, 
+                  dim: 80 + Math.random() * 80, 
+                  imgleft: Imgur.imgurls[iid++],
+                  imgright: Imgur.imgurls[iid++]};
+        });
+
+    d3.layout.cloud().size([svg_width, svg_height])
+        .vs_bins(vs_data)
+        .padding(5)
+        .on("end", draw)
+        .start();
+  }
+
+  Imgur.fetch(60, startAll);
+
+
 </script>
 </body>
