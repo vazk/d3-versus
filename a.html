@@ -15,7 +15,8 @@
 <link rel="stylesheet" type="text/css" href="a.css">
 <script src="lib/d3/d3.js"></script>
 <script src="js/d3.layout.cloud.js"></script>
-<script src="js/imgur.js"></script>
+<script src="js/imgurls.js"></script>
+
 <script>
   var fill = d3.scale.category20();
 
@@ -33,7 +34,7 @@
     var i = d3.select(this);
     i.select("rect")
           .transition()
-          .duration(200)
+          .duration(150)
           .attr('x', d.x-16)
           .attr('y', d.y-8)
           .attr('width', d.w+32)
@@ -41,7 +42,7 @@
 
     i.select(".vs-img-left")
           .transition()
-          .duration(200)
+          .duration(150)
           .attr('x', d.x-14)
           .attr('y', d.y-6)
           .attr('width', (d.w+28)/2-1)
@@ -49,7 +50,7 @@
 
     i.select(".vs-img-right")
           .transition()
-          .duration(200)
+          .duration(150)
           .attr('x', d.x-14 + (d.w+28)/2)
           .attr('y', d.y-6)
           .attr('width', (d.w+28)/2-1)
@@ -61,7 +62,7 @@
     var i = d3.select(this);
     i.select("rect")
           .transition()
-          .duration(200)
+          .duration(150)
           .attr('x', d.x)
           .attr('y', d.y)
           .attr('width', d.w)
@@ -69,7 +70,7 @@
 
     i.select(".vs-img-left")
           .transition()
-          .duration(200)
+          .duration(150)
           .attr('x', d.x+2)
           .attr('y', d.y+2)
           .attr('width', (d.w-4)/2-1)
@@ -77,7 +78,7 @@
 
     i.select(".vs-img-right")
           .transition()
-          .duration(200)
+          .duration(150)
           .attr('x', d.x+4 + (d.w-4)/2)
           .attr('y', d.y+2)
           .attr('width', (d.w-4)/2-1)
@@ -90,9 +91,10 @@
           .attr("y", 0)
           .attr("height", svg_height)
           .attr("width", svg_width)
-          .style("stroke", "green")
+          //.style("stroke", "green")
           .style("fill", "none")
-          .style("stroke-width", 2);
+          //.style("stroke-width", 2)
+          ;
 
       var gradient = svg.append("svg:defs")
           .append("svg:linearGradient")
@@ -118,6 +120,41 @@
           .attr("stop-color", "#CE173E")
           .attr("stop-opacity", 1);
 
+      // filters go in defs element
+      var defs = svg.append("defs");
+       
+      // create filter with id #drop-shadow
+      // height=130% so that the shadow is not clipped
+      var filter = defs.append("filter")
+          .attr("id", "drop-shadow")
+          .attr("height", "130%");
+       
+      // SourceAlpha refers to opacity of graphic that this filter will be applied to
+      // convolve that with a Gaussian with standard deviation 3 and store result
+      // in blur
+      filter.append("feGaussianBlur")
+          .attr("in", "SourceAlpha")
+          .attr("stdDeviation", 1)
+          .attr("result", "blur");
+       
+      // translate output of Gaussian blur to the right and downwards with 2px
+      // store result in offsetBlur
+      filter.append("feOffset")
+          .attr("in", "blur")
+          .attr("dx", 3)
+          .attr("dy", 3)
+          .attr("result", "offsetBlur");
+       
+      // overlay original SourceGraphic over translated blurred opacity by using
+      // feMerge filter. Order of specifying inputs is important!
+      var feMerge = filter.append("feMerge");
+       
+      feMerge.append("feMergeNode")
+          .attr("in", "offsetBlur")
+      feMerge.append("feMergeNode")
+          .attr("in", "SourceGraphic");
+
+
       var g = svg.attr("width",  svg_width)
                  .attr("height", svg_height)
                  .append("g")
@@ -129,20 +166,7 @@
                       .append("g")
                         .on("mouseover", onMouseIn)
                         .on("mouseout", onMouseOut);
-      vs_rects.append("svg:image")
-                .attr("x", function(d) { console.log("img: ", d); return d.x+2; })
-                .attr("y", function(d) { return d.y+2; })
-                .attr("width", function(d) { return (d.w-4)/2-1; })
-                .attr("height", function(d) { return d.h-4; })
-                .attr("xlink:href",function(d) { return d.imgleft; })
-                .attr('class', 'vs-img-left');
-      vs_rects.append("svg:image")
-                .attr("x", function(d) { console.log("img: ", d); return d.x+4 + (d.w-4)/2; })
-                .attr("y", function(d) { return d.y+2; })
-                .attr("width", function(d) { return (d.w-4)/2-1; })
-                .attr("height", function(d) { return d.h-4; })
-                .attr("xlink:href",function(d) { return d.imgright; })
-                .attr('class', 'vs-img-right');
+
       vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x+2; })
               .attr("y", function(d) { return d.y+2; })
@@ -150,13 +174,29 @@
               .attr("ry", function(d) { return d.h*0.04; })
               .attr("width", function(d) { return d.w-2; })
               .attr("height", function(d) { return d.h-2; })
-              .style("stroke", "url(#gradient)")
-              .style("stroke-width", 4)
-              .attr("fill", "transparent");
+              //.style("stroke", "url(#gradient)")
+              .style("stroke", "grey")
+              .style("stroke-width", 2)
+              .style("filter", "url(#drop-shadow)")
+              .attr("fill", "white");
+      vs_rects.append("svg:image")
+              .attr("x", function(d) { console.log("img: ", d); return d.x+2; })
+              .attr("y", function(d) { return d.y+2; })
+              .attr("width", function(d) { return (d.w-4)/2-1; })
+              .attr("height", function(d) { return d.h-4; })
+              .attr("xlink:href",function(d) { return d.imgleft; })
+              .attr('class', 'vs-img-left');
+      vs_rects.append("svg:image")
+              .attr("x", function(d) { console.log("img: ", d); return d.x+4 + (d.w-4)/2; })
+              .attr("y", function(d) { return d.y+2; })
+              .attr("width", function(d) { return (d.w-4)/2-1; })
+              .attr("height", function(d) { return d.h-4; })
+              .attr("xlink:href",function(d) { return d.imgright; })
+              .attr('class', 'vs-img-right');
   }
 
   function startAll() {
-    var iid = 0;
+    var iid = Math.floor(Math.random()*240);
     var vs_data = [
           "Hello", "world", "normally", "you", "want", "more", "words",
           "Hello", "world", "normally", "you", "want", "more", "words",
@@ -164,8 +204,8 @@
            "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
           return {text: d, 
                   dim: 80 + Math.random() * 80, 
-                  imgleft: Imgur.imgurls[iid++],
-                  imgright: Imgur.imgurls[iid++]};
+                  imgleft: imgurls[iid++],
+                  imgright: imgurls[iid++]};
         });
 
     d3.layout.cloud().size([svg_width, svg_height])
@@ -175,8 +215,8 @@
         .start();
   }
 
-  Imgur.fetch(60, startAll);
-
+  //Imgur.fetch(300, startAll);
+  startAll();
 
 </script>
 </body>

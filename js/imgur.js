@@ -16,6 +16,7 @@ var Imgur = {
       self.hunt(function(id) {
         self.done++;
         var imgurl = "http://i.imgur.com/" + id + "s.png";
+        console.log(imgurl);
         self.imgurls.push(imgurl);
         self.update();
         if(self.imgurls.length == num) {
