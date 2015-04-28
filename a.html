@@ -211,44 +211,85 @@
                       .append("g")
                         .on("mouseover", onMouseIn)
                         .on("mouseout", onMouseOut);
+      var xoff = 1;
+      var yoff = 1;
+      var wgain = 0;
+      var hgain = 0
+      var halo = 1;
 
+      /*var x_rect = d.x - xoff;
+      var y_rect = d.y - yoff;
+      var w_rect = d.w + wgain;
+      var h_rect = d.h + hgain;
+      var w_img = (w_rect -3*halo)/2;
+      var h_img = h_rect - 2*halo ;
+      var y_img = y_rect + halo;
+      var x_img_l = x_rect + halo;
+      var x_img_r = x_rect + (w_rect + halo)/2;*/
+      var char_dim = 10; 
+      var rat_h_halo = 4;
+      var rat_w_halo = 4;
+      var h_dim = 18;
       vs_rects.append("svg:rect")
               .attr('class', 'vs-bounding-rect')
-              .attr("x", function(d) { return d.x+1; })
-              .attr("y", function(d) { return d.y+1; })
+              .attr("x", function(d) { return d.x - xoff; })
+              .attr("y", function(d) { return d.y - yoff; })
               .attr("rx", function(d) { return d.h*0.04; })
               .attr("ry", function(d) { return d.h*0.04; })
-              .attr("width", function(d) { return d.w-2; })
-              .attr("height", function(d) { return d.h-2; })
+              .attr("width", function(d) { return d.w + wgain; })
+              .attr("height", function(d) { return d.h + hgain; })
               //.style("stroke", "url(#gradient)")
               .style("stroke", "grey")
               .style("stroke-width", 1)
               .style("filter", "url(#drop-shadow)")
               .attr("fill", "white");
-      /*vs_rects.append("svg:rect")
-              .attr('class', 'vs-gradient-rect')
-              .attr("x", function(d) { return d.x+2; })
-              .attr("y", function(d) { return d.y+d.h*4/5+2; })
-              .attr("rx", function(d) { return d.h*0.04; })
-              .attr("ry", function(d) { return d.h*0.04; })
-              .attr("width", function(d) { return d.w-2; })
-              .attr("height", function(d) { return d.h/5; })
-              .attr("fill", "url(#gradient)")
-              .style("stroke", "none");*/
       vs_rects.append("svg:image")
-              .attr("x", function(d) { return d.x + 2; })
-              .attr("y", function(d) { return d.y + 2; })
-              .attr("width", function(d) { return (d.w - 4 - 2)/2; })
-              .attr("height", function(d) { return d.h - 4; })
-              .attr("xlink:href",function(d) { return d.imgleft; })
+              .attr("x", function(d) { return d.x - xoff + halo; })
+              .attr("y", function(d) { return d.y - yoff + halo; })
+              .attr("width", function(d) { return (d.w + wgain -3*halo)/2; })
+              .attr("height", function(d) { return d.h + hgain - 2*halo; })
+              .attr("xlink:href",function(d) { return d.img_left; })
               .attr('class', 'vs-img-left');
       vs_rects.append("svg:image")
-              .attr("x", function(d) { return d.x + 2 + 2 + (d.w - 4 - 2)/2; })
-              .attr("y", function(d) { return d.y + 2; })
-              .attr("width", function(d) { return (d.w - 4 - 2)/2; })
-              .attr("height", function(d) { return d.h - 4; })
-              .attr("xlink:href",function(d) { return d.imgright; })
+              .attr("x", function(d) { return d.x - xoff + (d.w + wgain + halo)/2; })
+              .attr("y", function(d) { return d.y - yoff + halo; })
+              .attr("width", function(d) { return (d.w + wgain -3*halo)/2; })
+              .attr("height", function(d) { return d.h + hgain - 2*halo; })
+              .attr("xlink:href",function(d) { return d.img_right; })
               .attr('class', 'vs-img-right');
+      vs_rects.append("svg:rect")
+              .attr("x", function(d) { return d.x + rat_w_halo; })
+              .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
+              .attr("width", function(d) { return d.rat_left.toString().length * char_dim; })
+              .attr("height", function(d) { return h_dim; })
+              .attr("rx", function(d) { return d.h*0.04; })
+              .attr("ry", function(d) { return d.h*0.04; })
+              .style("stroke", "white")
+              .style("stroke-width", 1)
+              .attr('class', 'vs-counter-left')
+              .attr("fill", "#25BADF");
+      vs_rects.append("text")
+              .attr("x", function(d) { return d.x + rat_w_halo + 2; })
+              .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim + 4; })
+              .attr("dy", 9+"px")
+              .text(function(d) { return d.rat_left.toString(); });
+      vs_rects.append("svg:rect")
+              .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim; })
+              .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
+              .attr("width", function(d) { return d.rat_right.toString().length * char_dim; })
+              .attr("height", function(d) { return h_dim; })
+              .attr("rx", function(d) { return d.h*0.04; })
+              .attr("ry", function(d) { return d.h*0.04; })
+              .style("stroke", "white")
+              .style("stroke-width", 1)
+              .attr('class', 'vs-counter-right')
+              .attr("fill", "#CE173E");
+      vs_rects.append("text")
+              .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim + 2; })
+              .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim + 4; })
+              .attr("dy", 9+"px")
+              .text(function(d) { return d.rat_right.toString(); });
+
   }
 
   function startAll() {
@@ -260,8 +301,10 @@
            "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
           return {text: d, 
                   dim: 90 + Math.random() * 110, 
-                  imgleft: imgurls[iid++],
-                  imgright: imgurls[iid++]};
+                  img_left: imgurls[iid++],
+                  img_right: imgurls[iid++],
+                  rat_left: Math.floor(Math.random()*200),
+                  rat_right: Math.floor(Math.random()*200)};
         });
 
     d3.layout.cloud().size([svg_width, svg_height])
