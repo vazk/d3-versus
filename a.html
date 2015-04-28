@@ -21,8 +21,8 @@
   var fill = d3.scale.category20();
 
 
-  var svg_height = 500;
-  var svg_width = 800;
+  var svg_height = 600;
+  var svg_width = 900;
 
   var div_svg = d3.select("#div_svg");
   var svg = div_svg.append("svg");
@@ -31,58 +31,103 @@
 
 
   function onMouseIn(d) {
+    var xoff = 16;
+    var yoff = 8;
+    var wgain = 32;
+    var hgain = 16;
+    var halo = 2;
+
+    var x_rect = d.x - xoff;
+    var y_rect = d.y - yoff;
+    var w_rect = d.w + wgain;
+    var h_rect = d.h + hgain;
+    
     var i = d3.select(this);
-    i.select("rect")
+    i.select(".vs-bounding-rect")
           .transition()
           .duration(150)
-          .attr('x', d.x-16)
-          .attr('y', d.y-8)
-          .attr('width', d.w+32)
-          .attr('height', d.h+16);
+          .attr('x', x_rect)
+          .attr('y', y_rect)
+          .attr('width', w_rect)
+          .attr('height', h_rect);
+
+    var w_img = (w_rect -3*halo)/2;
+    var h_img = h_rect - 2*halo ;
+    var y_img = y_rect + halo;
+    var x_img_l = x_rect + halo;
+    var x_img_r = x_rect + (w_rect + halo)/2;
 
     i.select(".vs-img-left")
           .transition()
           .duration(150)
-          .attr('x', d.x-14)
-          .attr('y', d.y-6)
-          .attr('width', (d.w+28)/2-1)
-          .attr('height', d.h+12);
+          .attr('x', x_img_l)
+          .attr('y', y_img)
+          .attr('width', w_img)
+          .attr('height', h_img);
 
     i.select(".vs-img-right")
           .transition()
           .duration(150)
-          .attr('x', d.x-14 + (d.w+28)/2)
-          .attr('y', d.y-6)
-          .attr('width', (d.w+28)/2-1)
-          .attr('height', d.h+12);
+          .attr('x', x_img_r)
+          .attr('y', y_img)
+          .attr('width', w_img)
+          .attr('height', h_img);
+
+    /*i.select(".vs-gradient-rect")
+          .transition()
+          .duration(150)  
+          //.attr("x", d.x+2)
+          //.attr("y", d.y+d.h*4/5+2)
+          .attr("x", d.x-16)
+          .attr("y", d.y+d.h+6)
+          .attr("width", d.w+32)
+          //.attr("height", (d.h+16)/5);
+          .attr("height", 20);*/
     i.moveToFront();
   }
 
   function onMouseOut(d) {
+    var xoff = 1;
+    var yoff = 1;
+    var wgain = 0;
+    var hgain = 0
+    var halo = 1;
+
+    var x_rect = d.x - xoff;
+    var y_rect = d.y - yoff;
+    var w_rect = d.w + wgain;
+    var h_rect = d.h + hgain;
+    
     var i = d3.select(this);
-    i.select("rect")
+    i.select(".vs-bounding-rect")
           .transition()
           .duration(150)
-          .attr('x', d.x)
-          .attr('y', d.y)
-          .attr('width', d.w)
-          .attr('height', d.h);
+          .attr('x', x_rect)
+          .attr('y', y_rect)
+          .attr('width', w_rect)
+          .attr('height', h_rect);
+
+    var w_img = (w_rect -3*halo)/2;
+    var h_img = h_rect - 2*halo ;
+    var y_img = y_rect + halo;
+    var x_img_l = x_rect + halo;
+    var x_img_r = x_rect + (w_rect + halo)/2;
 
     i.select(".vs-img-left")
           .transition()
           .duration(150)
-          .attr('x', d.x+2)
-          .attr('y', d.y+2)
-          .attr('width', (d.w-4)/2-1)
-          .attr('height', d.h-4);
+          .attr('x', x_img_l)
+          .attr('y', y_img)
+          .attr('width', w_img)
+          .attr('height', h_img);
 
     i.select(".vs-img-right")
           .transition()
           .duration(150)
-          .attr('x', d.x+4 + (d.w-4)/2)
-          .attr('y', d.y+2)
-          .attr('width', (d.w-4)/2-1)
-          .attr('height', d.h-4);
+          .attr('x', x_img_r)
+          .attr('y', y_img)
+          .attr('width', w_img)
+          .attr('height', h_img);
   }
 
   function draw(vs_bins) {
@@ -168,29 +213,40 @@
                         .on("mouseout", onMouseOut);
 
       vs_rects.append("svg:rect")
-              .attr("x", function(d) { return d.x+2; })
-              .attr("y", function(d) { return d.y+2; })
+              .attr('class', 'vs-bounding-rect')
+              .attr("x", function(d) { return d.x+1; })
+              .attr("y", function(d) { return d.y+1; })
               .attr("rx", function(d) { return d.h*0.04; })
               .attr("ry", function(d) { return d.h*0.04; })
               .attr("width", function(d) { return d.w-2; })
               .attr("height", function(d) { return d.h-2; })
               //.style("stroke", "url(#gradient)")
               .style("stroke", "grey")
-              .style("stroke-width", 2)
+              .style("stroke-width", 1)
               .style("filter", "url(#drop-shadow)")
               .attr("fill", "white");
+      /*vs_rects.append("svg:rect")
+              .attr('class', 'vs-gradient-rect')
+              .attr("x", function(d) { return d.x+2; })
+              .attr("y", function(d) { return d.y+d.h*4/5+2; })
+              .attr("rx", function(d) { return d.h*0.04; })
+              .attr("ry", function(d) { return d.h*0.04; })
+              .attr("width", function(d) { return d.w-2; })
+              .attr("height", function(d) { return d.h/5; })
+              .attr("fill", "url(#gradient)")
+              .style("stroke", "none");*/
       vs_rects.append("svg:image")
-              .attr("x", function(d) { console.log("img: ", d); return d.x+2; })
-              .attr("y", function(d) { return d.y+2; })
-              .attr("width", function(d) { return (d.w-4)/2-1; })
-              .attr("height", function(d) { return d.h-4; })
+              .attr("x", function(d) { return d.x + 2; })
+              .attr("y", function(d) { return d.y + 2; })
+              .attr("width", function(d) { return (d.w - 4 - 2)/2; })
+              .attr("height", function(d) { return d.h - 4; })
               .attr("xlink:href",function(d) { return d.imgleft; })
               .attr('class', 'vs-img-left');
       vs_rects.append("svg:image")
-              .attr("x", function(d) { console.log("img: ", d); return d.x+4 + (d.w-4)/2; })
-              .attr("y", function(d) { return d.y+2; })
-              .attr("width", function(d) { return (d.w-4)/2-1; })
-              .attr("height", function(d) { return d.h-4; })
+              .attr("x", function(d) { return d.x + 2 + 2 + (d.w - 4 - 2)/2; })
+              .attr("y", function(d) { return d.y + 2; })
+              .attr("width", function(d) { return (d.w - 4 - 2)/2; })
+              .attr("height", function(d) { return d.h - 4; })
               .attr("xlink:href",function(d) { return d.imgright; })
               .attr('class', 'vs-img-right');
   }
@@ -203,7 +259,7 @@
           "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
            "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
           return {text: d, 
-                  dim: 80 + Math.random() * 80, 
+                  dim: 90 + Math.random() * 110, 
                   imgleft: imgurls[iid++],
                   imgright: imgurls[iid++]};
         });
