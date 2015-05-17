@@ -22,6 +22,8 @@
 <script>
   var fill = d3.scale.category20();
 
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext("2d");
 
   var svg_height = 600;
   var svg_width = 900;
@@ -31,6 +33,15 @@
 
   svg.style("background","white");
 
+
+  function computeFontSize(w, textLength) { 
+    return Math.min(2 * w, (2 * w - 8) / textLength * 24) + "px";
+  }
+
+  function computeTextWidth(text, font) {
+      ctx.font = font;        
+      return ctx.measureText(text).width;
+  }
 
   function onMouseIn(d) {
 
@@ -114,7 +125,8 @@
 
     i.select(".vs-counter-text-right")
           .transition().duration(150)
-          .attr("x", function(d) { return x_rect + w_rect*0.87 - d.rat_right.toString().length * (7*h_rect/100); })
+          //.attr("x", function(d) { return x_rect + w_rect*0.86 - d.rat_right.toString().length * (7*h_rect/100); })
+          .attr("x", function(d) { return x_rect + w_rect*0.9 - computeTextWidth(d.rat_right.toString(), '16px Nobile') - 1; })
           .attr("y", function(d) { return y_rect + h_rect*0.87; })
           .style("font-size", function(d) { return 16+"px";});
 
@@ -182,28 +194,30 @@
           .duration(150)
           .attr("x", function(d) { return d.x + d.w*0.1 ; })
           .attr("y", function(d) { return d.y + d.h*0.7; })
-          .attr("width", function(d) { return Math.max(15,(d.rat_left/(d.rat_right + d.rat_left))*d.w*0.8 - 1); })
+          .attr("width", function(d) { return d.counter_rect_left_width; })
           .attr("height", function(d) { return d.h*0.25; })
 
     i.select(".vs-counter-rect-right")
           .transition()
           .duration(150)
-          .attr("x", function(d) { return d.x + d.w*0.1 + Math.max(15,(d.rat_left/(d.rat_right+d.rat_left))*d.w*0.8) + 1; })
+          .attr("x", function(d) { return d.x + d.w*0.1 + d.counter_rect_left_width; })
           .attr("y", function(d) { return d.y + d.h*0.70; })
-          .attr("width", function(d) { return Math.max(15,(d.rat_right/(d.rat_right + d.rat_left))*d.w*0.8); })
+          .attr("width", function(d) { return d.w*0.8 - d.counter_rect_left_width; })
           .attr("height", function(d) { return d.h*0.25; })
 
     i.select(".vs-counter-text-left")
           .transition().duration(150)
           .attr("x", function(d) { return d.x + d.w*0.12; })
           .attr("y", function(d) { return d.y + d.h*0.87; })
-          .style("font-size", function(d) { return (d.h/100)+"em";});
+          .style("font-size", function(d) { return d.h*0.16 + 'px';});
+          //.style("font-size", function(d) { return (d.h/100)+"em";});
 
     i.select(".vs-counter-text-right")
           .transition().duration(150)
-          .attr("x", function(d) { return d.x + d.w*0.87 - d.rat_right.toString().length * (7*d.h/100); })
+          //.attr("x", function(d) { return d.x + d.w*0.86 - d.rat_right.toString().length * (7*d.h/100); }
+          .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
           .attr("y", function(d) { return d.y + d.h*0.87; })
-          .style("font-size", function(d) { return (d.h/100)+"em";});
+          .style("font-size", function(d) { return d.h*0.16 + 'px';});
   }
 
   function draw(vs_bins) {
@@ -341,8 +355,8 @@
               .attr("ry", function(d) { return d.h*0.04; })
               .attr("width", function(d) { return d.w + wgain; })
               .attr("height", function(d) { return d.h + hgain; })
-              .style("stroke", "grey")
-              .style("stroke-width", 1)
+              .style("stroke", "black")
+              .style("stroke-width", 3)
               //.style("filter", "url(#drop-shadow)")
               .attr("fill", "white");
       vs_rects.append("svg:image")
@@ -384,31 +398,17 @@
               .style("stroke-width", 2)
               .attr('class', 'vs-img-border-right');
 
-      vs_rects.append("svg:rect")
-              //.attr("x", function(d) { return d.x + rat_w_halo; })
-              .attr("x", function(d) { return d.x + d.w*0.1 + Math.max(15,(d.rat_left/(d.rat_right+d.rat_left))*d.w*0.8) + 1; })
-              //.attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
-              .attr("y", function(d) { return d.y + d.h*0.70; })
-              //.attr("width", function(d) { return d.w - 2* rat_w_halo; })
-              .attr("width", function(d) { return Math.max(15,(d.rat_right/(d.rat_right + d.rat_left))*d.w*0.8); })
-              .attr("height", function(d) { return d.h*0.25; })
-              //.attr("rx", function(d) { return d.h*0.04; })
-              //.attr("ry", function(d) { return d.h*0.04; })
-              //.style("stroke", "white")
-              //.style("stroke-width", 1)
-              .style("fill", "url(#gradient_right)")
-              //.style("filter", "url(#drop-shadow)")
-              .style("stroke", "white")
-              .style("stroke-width", 2)
-              .attr('class', 'vs-counter-rect-right');
+
 
       vs_rects.append("svg:rect")
               //.attr("x", function(d) { return d.x + rat_w_halo; })
               .attr("x", function(d) { return d.x + d.w*0.1 ; })
               //.attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
               .attr("y", function(d) { return d.y + d.h*0.7; })
-              //.attr("width", function(d) { return d.w - 2* rat_w_halo; })
-              .attr("width", function(d) { return Math.max(15,(d.rat_left/(d.rat_right + d.rat_left))*d.w*0.8 - 1); })
+              .attr("width", function(d) { 
+                      d.counter_rect_left_width = Math.min(d.w*0.8-15, Math.max(15,(d.rat_left/(d.rat_right +                                                         d.rat_left))*d.w*0.8 - 1));
+                      return d.counter_rect_left_width
+                    })
               .attr("height", function(d) { return d.h*0.25; })
               //.attr("rx", function(d) { return d.h*0.04; })
               //.attr("ry", function(d) { return d.h*0.04; })
@@ -420,21 +420,42 @@
               .style("stroke-width", 2)
               .attr('class', 'vs-counter-rect-left');
 
+      vs_rects.append("svg:rect")
+              //.attr("x", function(d) { return d.x + rat_w_halo; })
+              .attr("x", function(d) { 
+                      return d.x + d.w*0.1 + d.counter_rect_left_width; 
+                    })
+              //.attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
+              .attr("y", function(d) { return d.y + d.h*0.70; })
+              //.attr("width", function(d) { return Math.max(15,(d.rat_right/(d.rat_right + d.rat_left))*d.w*0.8); })
+              .attr("width", function(d) { return d.w*0.8 - d.counter_rect_left_width; })
+              .attr("height", function(d) { return d.h*0.25; })
+              //.attr("rx", function(d) { return d.h*0.04; })
+              //.attr("ry", function(d) { return d.h*0.04; })
+              //.style("stroke", "white")
+              //.style("stroke-width", 1)
+              .style("fill", "url(#gradient_right)")
+              //.style("filter", "url(#drop-shadow)")
+              .style("stroke", "white")
+              .style("stroke-width", 2)
+              .attr('class', 'vs-counter-rect-right');
+
       vs_rects.append("text")
               .attr("x", function(d) { return d.x + d.w*0.12; })
               .attr("y", function(d) { return d.y + d.h*0.87; })
               //.attr("fill", "white")
               .style("font-family","Nobile")
-              .style("font-size", function(d) { return (d.h/100)+"em";})
+              .style("font-size", function(d) { return d.h*0.16 + 'px';})
               .text(function(d) { return d.rat_left.toString(); })
               .attr('class', 'vs-counter-text-left');
 
       vs_rects.append("text")
-              .attr("x", function(d) { return d.x + d.w*0.87 - d.rat_right.toString().length * (7*d.h/100); })
+              //.attr("x", function(d) { return d.x + d.w*0.86 - d.rat_right.toString().length * (7*d.h/100); })
+              .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+"px Nobile") - 2})
               .attr("y", function(d) { return d.y + d.h*0.87; })
               //.attr("fill", "white")
               .style("font-family","Nobile")
-              .style("font-size", function(d) { return (d.h/100)+"em";})
+              .style("font-size", function(d) { return d.h*0.16 + 'px';})
               .text(function(d) { return d.rat_right.toString(); })
               .attr('class', 'vs-counter-text-right');
 
