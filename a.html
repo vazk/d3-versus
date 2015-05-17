@@ -11,11 +11,13 @@
   <div class="Aligner-item Aligner-item--bottom"></div>
 </div>
 
-
+<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Nobile" />
+<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Paytone+One" />
 <link rel="stylesheet" type="text/css" href="a.css">
 <script src="lib/d3/d3.js"></script>
 <script src="js/d3.layout.cloud.js"></script>
 <script src="js/imgurls.js"></script>
+
 
 <script>
   var fill = d3.scale.category20();
@@ -31,11 +33,12 @@
 
 
   function onMouseIn(d) {
-    var xoff = 16;
-    var yoff = 8;
-    var wgain = 32;
-    var hgain = 16;
-    var halo = 2;
+
+    var wgain = 220-d.w;
+    var hgain = 110-d.h;
+    var xoff = wgain/2;
+    var yoff = hgain/2;
+    var halo = 0;
 
     var x_rect = d.x - xoff;
     var y_rect = d.y - yoff;
@@ -51,13 +54,20 @@
           .attr('width', w_rect)
           .attr('height', h_rect);
 
-    var w_img = (w_rect -3*halo)/2;
-    var h_img = h_rect - 2*halo ;
+    var w_img = (w_rect -3*halo)/2 - 2;
+    var h_img = h_rect - 2*halo - 2;
     var y_img = y_rect + halo;
     var x_img_l = x_rect + halo;
     var x_img_r = x_rect + (w_rect + halo)/2;
 
     i.select(".vs-img-left")
+          .transition()
+          .duration(150)
+          .attr('x', x_img_l + 1)
+          .attr('y', y_img + 1)
+          .attr('width', w_img - 2)
+          .attr('height', h_img - 2);
+    i.select(".vs-img-border-left")
           .transition()
           .duration(150)
           .attr('x', x_img_l)
@@ -68,21 +78,46 @@
     i.select(".vs-img-right")
           .transition()
           .duration(150)
+          .attr('x', x_img_r + 2)
+          .attr('y', y_img + 2)
+          .attr('width', w_img - 2)
+          .attr('height', h_img - 2);
+    i.select(".vs-img-border-right")
+          .transition()
+          .duration(150)
           .attr('x', x_img_r)
           .attr('y', y_img)
           .attr('width', w_img)
           .attr('height', h_img);
 
-    /*i.select(".vs-gradient-rect")
+      i.select(".vs-counter-rect-left")
           .transition()
-          .duration(150)  
-          //.attr("x", d.x+2)
-          //.attr("y", d.y+d.h*4/5+2)
-          .attr("x", d.x-16)
-          .attr("y", d.y+d.h+6)
-          .attr("width", d.w+32)
-          //.attr("height", (d.h+16)/5);
-          .attr("height", 20);*/
+          .duration(150)
+          .attr("x", function(d) { return x_rect + w_rect*0.1 ; })
+          .attr("y", function(d) { return y_rect + h_rect*0.7; })
+          .attr("width", function(d) { return Math.max(15,(d.rat_left/(d.rat_right + d.rat_left))*w_rect*0.8 - 1); })
+          .attr("height", function(d) { return h_rect*0.25; });
+
+    i.select(".vs-counter-rect-right")
+          .transition()
+          .duration(150)
+          .attr("x", function(d) { return x_rect + w_rect*0.1 + Math.max(15,(d.rat_left/(d.rat_right+d.rat_left))*w_rect*0.8) + 1; })
+          .attr("y", function(d) { return y_rect + h_rect*0.70; })
+          .attr("width", function(d) { return Math.max(15,(d.rat_right/(d.rat_right + d.rat_left))*w_rect*0.8); })
+          .attr("height", function(d) { return h_rect*0.25; });
+ 
+    i.select(".vs-counter-text-left")
+          .transition().duration(150)
+          .attr("x", function(d) { return x_rect + w_rect*0.12; })
+          .attr("y", function(d) { return y_rect + h_rect*0.87; })
+          .style("font-size", function(d) { return 16+"px";});
+
+    i.select(".vs-counter-text-right")
+          .transition().duration(150)
+          .attr("x", function(d) { return x_rect + w_rect*0.87 - d.rat_right.toString().length * (7*h_rect/100); })
+          .attr("y", function(d) { return y_rect + h_rect*0.87; })
+          .style("font-size", function(d) { return 16+"px";});
+
     i.moveToFront();
   }
 
@@ -116,18 +151,59 @@
     i.select(".vs-img-left")
           .transition()
           .duration(150)
+          .attr('x', x_img_l + 1)
+          .attr('y', y_img + 1)
+          .attr('width', w_img - 2)
+          .attr('height', h_img - 2);
+    i.select(".vs-img-border-left")
+          .transition()
+          .duration(150)
           .attr('x', x_img_l)
           .attr('y', y_img)
           .attr('width', w_img)
           .attr('height', h_img);
-
     i.select(".vs-img-right")
+          .transition()
+          .duration(150)
+          .attr('x', x_img_r + 2)
+          .attr('y', y_img + 2)
+          .attr('width', w_img - 2)
+          .attr('height', h_img - 2);
+    i.select(".vs-img-border-right")
           .transition()
           .duration(150)
           .attr('x', x_img_r)
           .attr('y', y_img)
           .attr('width', w_img)
           .attr('height', h_img);
+
+    i.select(".vs-counter-rect-left")
+          .transition()
+          .duration(150)
+          .attr("x", function(d) { return d.x + d.w*0.1 ; })
+          .attr("y", function(d) { return d.y + d.h*0.7; })
+          .attr("width", function(d) { return Math.max(15,(d.rat_left/(d.rat_right + d.rat_left))*d.w*0.8 - 1); })
+          .attr("height", function(d) { return d.h*0.25; })
+
+    i.select(".vs-counter-rect-right")
+          .transition()
+          .duration(150)
+          .attr("x", function(d) { return d.x + d.w*0.1 + Math.max(15,(d.rat_left/(d.rat_right+d.rat_left))*d.w*0.8) + 1; })
+          .attr("y", function(d) { return d.y + d.h*0.70; })
+          .attr("width", function(d) { return Math.max(15,(d.rat_right/(d.rat_right + d.rat_left))*d.w*0.8); })
+          .attr("height", function(d) { return d.h*0.25; })
+
+    i.select(".vs-counter-text-left")
+          .transition().duration(150)
+          .attr("x", function(d) { return d.x + d.w*0.12; })
+          .attr("y", function(d) { return d.y + d.h*0.87; })
+          .style("font-size", function(d) { return (d.h/100)+"em";});
+
+    i.select(".vs-counter-text-right")
+          .transition().duration(150)
+          .attr("x", function(d) { return d.x + d.w*0.87 - d.rat_right.toString().length * (7*d.h/100); })
+          .attr("y", function(d) { return d.y + d.h*0.87; })
+          .style("font-size", function(d) { return (d.h/100)+"em";});
   }
 
   function draw(vs_bins) {
@@ -141,26 +217,53 @@
           //.style("stroke-width", 2)
           ;
 
-      var gradient = svg.append("svg:defs")
+      var gradient_left = svg.append("svg:defs")
           .append("svg:linearGradient")
-          .attr("id", "gradient")
+          .attr("id", "gradient_left")
           .attr("x1", "0%")
           .attr("y1", "0%")
           .attr("x2", "100%")
           .attr("y2", "0%")
           .attr("spreadMethod", "pad");
 
-      gradient.append("svg:stop")
+      gradient_left.append("svg:stop")
           .attr("offset", "0%")
           .attr("stop-color", "#25BADF")
           .attr("stop-opacity", 1);
 
-      gradient.append("svg:stop")
+
+      gradient_left.append("svg:stop")
           .attr("offset", "50%")
+          .attr("stop-color", "#1BCB9D")//27 203 157
+          .attr("stop-opacity", 1);
+
+      gradient_left.append("svg:stop")
+          .attr("offset", "100%")
+          .attr("stop-color", "#25BADF")
+          .attr("stop-opacity", 1);
+
+
+      var gradient_right = svg.append("svg:defs")
+          .append("svg:linearGradient")
+          .attr("id", "gradient_right")
+          .attr("x1", "0%")
+          .attr("y1", "0%")
+          .attr("x2", "100%")
+          .attr("y2", "0%")
+          .attr("spreadMethod", "pad");
+
+
+      gradient_right.append("svg:stop")
+          .attr("offset", "0%")
           .attr("stop-color", "#F98829")
           .attr("stop-opacity", 1);
 
-      gradient.append("svg:stop")
+      gradient_right.append("svg:stop")
+          .attr("offset", "50%")
+          .attr("stop-color", "#F8750B")//248 117 11
+          .attr("stop-opacity", 1);
+
+      gradient_right.append("svg:stop")
           .attr("offset", "100%")
           .attr("stop-color", "#CE173E")
           .attr("stop-opacity", 1);
@@ -226,10 +329,10 @@
       var y_img = y_rect + halo;
       var x_img_l = x_rect + halo;
       var x_img_r = x_rect + (w_rect + halo)/2;*/
-      var char_dim = 10; 
-      var rat_h_halo = 4;
-      var rat_w_halo = 4;
-      var h_dim = 18;
+      var char_dim = 12; 
+      var rat_h_halo = -3;
+      var rat_w_halo = 13;
+      var h_dim = 24;
       vs_rects.append("svg:rect")
               .attr('class', 'vs-bounding-rect')
               .attr("x", function(d) { return d.x - xoff; })
@@ -238,57 +341,120 @@
               .attr("ry", function(d) { return d.h*0.04; })
               .attr("width", function(d) { return d.w + wgain; })
               .attr("height", function(d) { return d.h + hgain; })
-              //.style("stroke", "url(#gradient)")
               .style("stroke", "grey")
               .style("stroke-width", 1)
-              .style("filter", "url(#drop-shadow)")
+              //.style("filter", "url(#drop-shadow)")
               .attr("fill", "white");
       vs_rects.append("svg:image")
+              .attr("x", function(d) { return d.x - xoff + halo + 1; })
+              .attr("y", function(d) { return d.y - yoff + halo + 1; })
+              .attr("width", function(d) { return (d.w + wgain -3*halo)/2 - 2; })
+              .attr("height", function(d) { return d.h + hgain - 2*halo - 2; })
+              .attr("xlink:href",function(d) { return d.img_left; })
+              .attr('class', 'vs-img-left');
+      vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x - xoff + halo; })
               .attr("y", function(d) { return d.y - yoff + halo; })
               .attr("width", function(d) { return (d.w + wgain -3*halo)/2; })
               .attr("height", function(d) { return d.h + hgain - 2*halo; })
               .attr("xlink:href",function(d) { return d.img_left; })
-              .attr('class', 'vs-img-left');
+              .attr("rx", function(d) { return d.h*0.04; })
+              .attr("ry", function(d) { return d.h*0.04; })
+              .style("fill", "none")
+              .style("stroke", "#25BADF")
+              .style("stroke-width", 2)
+              .attr('class', 'vs-img-border-left');
+
       vs_rects.append("svg:image")
+              .attr("x", function(d) { return d.x - xoff + (d.w + wgain + halo)/2 + 1; })
+              .attr("y", function(d) { return d.y - yoff + halo + 1; })
+              .attr("width", function(d) { return (d.w + wgain -3*halo)/2 - 2; })
+              .attr("height", function(d) { return d.h + hgain - 2*halo - 2; })
+              .attr("xlink:href",function(d) { return d.img_right; })
+              .attr('class', 'vs-img-right');
+      vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x - xoff + (d.w + wgain + halo)/2; })
               .attr("y", function(d) { return d.y - yoff + halo; })
               .attr("width", function(d) { return (d.w + wgain -3*halo)/2; })
               .attr("height", function(d) { return d.h + hgain - 2*halo; })
-              .attr("xlink:href",function(d) { return d.img_right; })
-              .attr('class', 'vs-img-right');
-      vs_rects.append("svg:rect")
-              .attr("x", function(d) { return d.x + rat_w_halo; })
-              .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
-              .attr("width", function(d) { return d.rat_left.toString().length * char_dim; })
-              .attr("height", function(d) { return h_dim; })
               .attr("rx", function(d) { return d.h*0.04; })
               .attr("ry", function(d) { return d.h*0.04; })
-              .style("stroke", "white")
-              .style("stroke-width", 1)
-              .attr('class', 'vs-counter-left')
-              .attr("fill", "#25BADF");
-      vs_rects.append("text")
-              .attr("x", function(d) { return d.x + rat_w_halo + 2; })
-              .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim + 4; })
-              .attr("dy", 9+"px")
-              .text(function(d) { return d.rat_left.toString(); });
+              .style("fill", "none")
+              .style("stroke", "#CE173E")
+              .style("stroke-width", 2)
+              .attr('class', 'vs-img-border-right');
+
       vs_rects.append("svg:rect")
+              //.attr("x", function(d) { return d.x + rat_w_halo; })
+              .attr("x", function(d) { return d.x + d.w*0.1 + Math.max(15,(d.rat_left/(d.rat_right+d.rat_left))*d.w*0.8) + 1; })
+              //.attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
+              .attr("y", function(d) { return d.y + d.h*0.70; })
+              //.attr("width", function(d) { return d.w - 2* rat_w_halo; })
+              .attr("width", function(d) { return Math.max(15,(d.rat_right/(d.rat_right + d.rat_left))*d.w*0.8); })
+              .attr("height", function(d) { return d.h*0.25; })
+              //.attr("rx", function(d) { return d.h*0.04; })
+              //.attr("ry", function(d) { return d.h*0.04; })
+              //.style("stroke", "white")
+              //.style("stroke-width", 1)
+              .style("fill", "url(#gradient_right)")
+              //.style("filter", "url(#drop-shadow)")
+              .style("stroke", "white")
+              .style("stroke-width", 2)
+              .attr('class', 'vs-counter-rect-right');
+
+      vs_rects.append("svg:rect")
+              //.attr("x", function(d) { return d.x + rat_w_halo; })
+              .attr("x", function(d) { return d.x + d.w*0.1 ; })
+              //.attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
+              .attr("y", function(d) { return d.y + d.h*0.7; })
+              //.attr("width", function(d) { return d.w - 2* rat_w_halo; })
+              .attr("width", function(d) { return Math.max(15,(d.rat_left/(d.rat_right + d.rat_left))*d.w*0.8 - 1); })
+              .attr("height", function(d) { return d.h*0.25; })
+              //.attr("rx", function(d) { return d.h*0.04; })
+              //.attr("ry", function(d) { return d.h*0.04; })
+              //.style("stroke", "white")
+              //.style("stroke-width", 1)
+              .style("fill", "url(#gradient_left)")
+              //.style("filter", "url(#drop-shadow)")
+              .style("stroke", "white")
+              .style("stroke-width", 2)
+              .attr('class', 'vs-counter-rect-left');
+
+      vs_rects.append("text")
+              .attr("x", function(d) { return d.x + d.w*0.12; })
+              .attr("y", function(d) { return d.y + d.h*0.87; })
+              //.attr("fill", "white")
+              .style("font-family","Nobile")
+              .style("font-size", function(d) { return (d.h/100)+"em";})
+              .text(function(d) { return d.rat_left.toString(); })
+              .attr('class', 'vs-counter-text-left');
+
+      vs_rects.append("text")
+              .attr("x", function(d) { return d.x + d.w*0.87 - d.rat_right.toString().length * (7*d.h/100); })
+              .attr("y", function(d) { return d.y + d.h*0.87; })
+              //.attr("fill", "white")
+              .style("font-family","Nobile")
+              .style("font-size", function(d) { return (d.h/100)+"em";})
+              .text(function(d) { return d.rat_right.toString(); })
+              .attr('class', 'vs-counter-text-right');
+
+      /*vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim; })
               .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
               .attr("width", function(d) { return d.rat_right.toString().length * char_dim; })
               .attr("height", function(d) { return h_dim; })
-              .attr("rx", function(d) { return d.h*0.04; })
-              .attr("ry", function(d) { return d.h*0.04; })
-              .style("stroke", "white")
+              //.attr("rx", function(d) { return d.h*0.04; })
+              //.attr("ry", function(d) { return d.h*0.04; })
+              .style("stroke", "black")
               .style("stroke-width", 1)
               .attr('class', 'vs-counter-right')
-              .attr("fill", "#CE173E");
-      vs_rects.append("text")
-              .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim + 2; })
+              .attr("fill", "#CE173E");*/
+      /*vs_rects.append("text")
+              .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim - 2; })
               .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim + 4; })
-              .attr("dy", 9+"px")
-              .text(function(d) { return d.rat_right.toString(); });
+              .attr("dy", 11+"px")
+              //.style("font-size",11+"px")
+              .text(function(d) { return d.rat_right.toString(); });*/
 
   }
 
