@@ -84,10 +84,19 @@
     i.select(".vs-bounding-rect")
           .transition()
           .duration(150)
-          .attr('x', x_rect)
-          .attr('y', y_rect)
-          .attr('width', w_rect)
-          .attr('height', h_rect);
+          .attr('x', x_rect-3)
+          .attr('y', y_rect-3)
+          .attr('width', w_rect+6)
+          .attr('height', h_rect+6)
+          .style("stroke", "white")
+          .style("stroke-width", 8)
+          .style("filter", "url(#drop-shadow)")
+          .each("end", function(){
+                i.select(".vs-close-circle")
+                    .attr("cx", function(d) { return x_rect + w_rect - 5; })
+                    .attr("cy", function(d) { return y_rect + 5; })
+                    .style("opacity", 1);
+          });
 
     var w_img = (w_rect -3*halo)/2 - 2;
     var h_img = h_rect - 2*halo - 2;
@@ -153,6 +162,9 @@
           .attr("x", function(d) { return x_rect + w_rect*0.9 - computeTextWidth(d.rat_right.toString(), '16px Nobile') - 1; })
           .attr("y", function(d) { return y_rect + h_rect*0.87; })
           .style("font-size", function(d) { return 16+"px";});
+    
+    console.log('mouse in');
+    
 
     i.moveToFront();
   }
@@ -176,7 +188,10 @@
           .attr('x', x_rect)
           .attr('y', y_rect)
           .attr('width', w_rect)
-          .attr('height', h_rect);
+          .attr('height', h_rect)
+          .style("stroke", "black")
+          .style("stroke-width", 3)
+          .style("filter", "none");
 
     var w_img = (w_rect -3*halo)/2;
     var h_img = h_rect - 2*halo ;
@@ -242,9 +257,19 @@
           .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
           .attr("y", function(d) { return d.y + d.h*0.87; })
           .style("font-size", function(d) { return d.h*0.16 + 'px';});
+
+    i.select(".vs-close-circle")
+          //.transition().duration(50)
+          //.attr("cx", function(d) { return x_rect + w_rect - 5; })
+          //.attr("cy", function(d) { return y_rect + 5; })
+          .style("opacity", 0);
+
+    console.log('mouse out');
+
+    
   }
 
-    function updateBlock(d, i) {
+  function updateBlock(d, i) {
     var xoff = 1;
     var yoff = 1;
     var wgain = 0;
@@ -328,7 +353,14 @@
           .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
           .attr("y", function(d) { return d.y + d.h*0.87; })
           .style("font-size", function(d) { return d.h*0.16 + 'px';});
+    
+    console.log('update block');
+
   }
+
+
+
+
 
   function draw(vs_bins) {
       var borderPath = svg.append("rect")
@@ -406,15 +438,15 @@
       // in blur
       filter.append("feGaussianBlur")
           .attr("in", "SourceAlpha")
-          .attr("stdDeviation", 1)
+          .attr("stdDeviation", 5)
           .attr("result", "blur");
        
       // translate output of Gaussian blur to the right and downwards with 2px
       // store result in offsetBlur
       filter.append("feOffset")
           .attr("in", "blur")
-          .attr("dx", 3)
-          .attr("dy", 3)
+          .attr("dx", 0)
+          .attr("dy", 0)
           .attr("result", "offsetBlur");
        
       // overlay original SourceGraphic over translated blurred opacity by using
@@ -438,8 +470,8 @@
                     .enter()
                       .append('g')
                         .attr('class', function(d) { return d.classname; })
-                        .on("mouseover", onMouseIn)
-                        .on("mouseout", onMouseOut);
+                        .on("mouseenter", onMouseIn)
+                        .on("mouseleave", onMouseOut);
       var xoff = 1;
       var yoff = 1;
       var wgain = 0;
@@ -570,6 +602,16 @@
               .style("font-size", function(d) { return d.h*0.16 + 'px';})
               .text(function(d) { return d.rat_right.toString(); })
               .attr('class', 'vs-counter-text-right');
+
+      vs_rects.append('circle')
+             .attr("cx", function(d) { return d.x + d.w; })
+              .attr("cy", function(d) { return d.y; })
+              .attr("r", 14)
+              .style("fill", "white")
+              .style("stroke", "black")
+              .style("stroke-width", 4)
+              .style("opacity", 0)
+              .attr('class', 'vs-close-circle');
 
       /*vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim; })
