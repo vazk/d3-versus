@@ -36,7 +36,7 @@
 
   svg.style("background","white");
 
-  var getx = function(d) { return d.x; }
+  /*var getx = function(d) { return d.x; }
   var getw = function(d) { return d.w; }
   var gety = function(d) { return d.y; }
   var geth = function(d) { return d.h; }
@@ -55,11 +55,11 @@
                           var block = d3.select("."+d.classname)
                           updateBlock(d, block);
                       }
-                  });
+                  });*/
 
 
   function computeFontSize(w, textLength) { 
-    return Math.min(2 * w, (2 * w - 8) / textLength * 24) + "px";
+      return Math.min(2 * w, (2 * w - 8) / textLength * 24) + "px";
   }
 
   function computeTextWidth(text, font) {
@@ -68,311 +68,298 @@
   }
 
   function onMouseIn(d) {
+      var wgain = 220-d.w;
+      var hgain = 110-d.h;
+      var xoff = wgain/2;
+      var yoff = hgain/2;
+      var halo = 0;
 
-    var wgain = 220-d.w;
-    var hgain = 110-d.h;
-    var xoff = wgain/2;
-    var yoff = hgain/2;
-    var halo = 0;
+      var x_rect = d.x - xoff;
+      var y_rect = d.y - yoff;
+      var w_rect = d.w + wgain;
+      var h_rect = d.h + hgain;
+      
+      var i = d3.select(this);
+      i.select(".vs-bounding-rect")
+            .transition()
+            .duration(150)
+            .attr('x', x_rect-3)
+            .attr('y', y_rect-3)
+            .attr('width', w_rect+6)
+            .attr('height', h_rect+6)
+            .style("stroke", "white")
+            .style("stroke-width", 8)
+            .style("filter", "url(#drop-shadow)")
+            .each("end", function(){
+                  i.select(".vs-close-circle")
+                      .attr("cx", x_rect + w_rect - 5)
+                      .attr("cy", y_rect + 5)
+                      .style("opacity", 1);
+                  i.select(".vs-close-x1")
+                      .attr("x1", x_rect + w_rect )
+                      .attr("y1", y_rect)
+                      .attr("x2", x_rect + w_rect - 10)
+                      .attr("y2", y_rect + 10)
+                      .style("opacity", 1);
+                  i.select(".vs-close-x2")
+                      .attr("x1", x_rect + w_rect - 10)
+                      .attr("y1", y_rect)
+                      .attr("x2", x_rect + w_rect)
+                      .attr("y2", y_rect + 10)
+                      .style("opacity", 1);
+            });
 
-    var x_rect = d.x - xoff;
-    var y_rect = d.y - yoff;
-    var w_rect = d.w + wgain;
-    var h_rect = d.h + hgain;
-    
-    var i = d3.select(this);
-    i.select(".vs-bounding-rect")
-          .transition()
-          .duration(150)
-          .attr('x', x_rect-3)
-          .attr('y', y_rect-3)
-          .attr('width', w_rect+6)
-          .attr('height', h_rect+6)
-          .style("stroke", "white")
-          .style("stroke-width", 8)
-          .style("filter", "url(#drop-shadow)")
-          .each("end", function(){
-                i.select(".vs-close-circle")
-                    .attr("cx", x_rect + w_rect - 5)
-                    .attr("cy", y_rect + 5)
-                    .style("opacity", 1);
-                i.select(".vs-close-x1")
-                    .attr("x1", x_rect + w_rect )
-                    .attr("y1", y_rect)
-                    .attr("x2", x_rect + w_rect - 10)
-                    .attr("y2", y_rect + 10)
-                    .style("opacity", 1);
-                i.select(".vs-close-x2")
-                    .attr("x1", x_rect + w_rect - 10)
-                    .attr("y1", y_rect)
-                    .attr("x2", x_rect + w_rect)
-                    .attr("y2", y_rect + 10)
-                    .style("opacity", 1);
-          });
+      var w_img = (w_rect -3*halo)/2 - 2;
+      var h_img = h_rect - 2*halo - 2;
+      var y_img = y_rect + halo;
+      var x_img_l = x_rect + halo;
+      var x_img_r = x_rect + (w_rect + halo)/2;
 
-    var w_img = (w_rect -3*halo)/2 - 2;
-    var h_img = h_rect - 2*halo - 2;
-    var y_img = y_rect + halo;
-    var x_img_l = x_rect + halo;
-    var x_img_r = x_rect + (w_rect + halo)/2;
+      i.select(".vs-img-left")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_l + 1)
+            .attr('y', y_img + 1)
+            .attr('width', w_img - 2)
+            .attr('height', h_img - 2);
+      i.select(".vs-img-border-left")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_l)
+            .attr('y', y_img)
+            .attr('width', w_img)
+            .attr('height', h_img);
 
-    i.select(".vs-img-left")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_l + 1)
-          .attr('y', y_img + 1)
-          .attr('width', w_img - 2)
-          .attr('height', h_img - 2);
-    i.select(".vs-img-border-left")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_l)
-          .attr('y', y_img)
-          .attr('width', w_img)
-          .attr('height', h_img);
+      i.select(".vs-img-right")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_r + 2)
+            .attr('y', y_img + 2)
+            .attr('width', w_img - 2)
+            .attr('height', h_img - 2);
+      i.select(".vs-img-border-right")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_r)
+            .attr('y', y_img)
+            .attr('width', w_img)
+            .attr('height', h_img);
 
-    i.select(".vs-img-right")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_r + 2)
-          .attr('y', y_img + 2)
-          .attr('width', w_img - 2)
-          .attr('height', h_img - 2);
-    i.select(".vs-img-border-right")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_r)
-          .attr('y', y_img)
-          .attr('width', w_img)
-          .attr('height', h_img);
+      i.select(".vs-counter-rect-left")
+            .transition()
+            .duration(150)
+            .attr("x", function(d) { return x_rect + w_rect*0.1 ; })
+            .attr("y", function(d) { return y_rect + h_rect*0.7; })
+            .attr("width", function(d) { return Math.max(15,(d.rat_left/(d.rat_right + d.rat_left))*w_rect*0.8 - 1); })
+            .attr("height", function(d) { return h_rect*0.25; });
 
-    i.select(".vs-counter-rect-left")
-          .transition()
-          .duration(150)
-          .attr("x", function(d) { return x_rect + w_rect*0.1 ; })
-          .attr("y", function(d) { return y_rect + h_rect*0.7; })
-          .attr("width", function(d) { return Math.max(15,(d.rat_left/(d.rat_right + d.rat_left))*w_rect*0.8 - 1); })
-          .attr("height", function(d) { return h_rect*0.25; });
+      i.select(".vs-counter-rect-right")
+            .transition()
+            .duration(150)
+            .attr("x", function(d) { return x_rect + w_rect*0.1 + Math.max(15,(d.rat_left/(d.rat_right+d.rat_left))*w_rect*0.8) + 1; })
+            .attr("y", function(d) { return y_rect + h_rect*0.70; })
+            .attr("width", function(d) { return Math.max(15,(d.rat_right/(d.rat_right + d.rat_left))*w_rect*0.8); })
+            .attr("height", function(d) { return h_rect*0.25; });
+   
+      i.select(".vs-counter-text-left")
+            .transition().duration(150)
+            .attr("x", function(d) { return x_rect + w_rect*0.12; })
+            .attr("y", function(d) { return y_rect + h_rect*0.87; })
+            .style("font-size", function(d) { return 16+"px";});
 
-    i.select(".vs-counter-rect-right")
-          .transition()
-          .duration(150)
-          .attr("x", function(d) { return x_rect + w_rect*0.1 + Math.max(15,(d.rat_left/(d.rat_right+d.rat_left))*w_rect*0.8) + 1; })
-          .attr("y", function(d) { return y_rect + h_rect*0.70; })
-          .attr("width", function(d) { return Math.max(15,(d.rat_right/(d.rat_right + d.rat_left))*w_rect*0.8); })
-          .attr("height", function(d) { return h_rect*0.25; });
- 
-    i.select(".vs-counter-text-left")
-          .transition().duration(150)
-          .attr("x", function(d) { return x_rect + w_rect*0.12; })
-          .attr("y", function(d) { return y_rect + h_rect*0.87; })
-          .style("font-size", function(d) { return 16+"px";});
-
-    i.select(".vs-counter-text-right")
-          .transition().duration(150)
-          //.attr("x", function(d) { return x_rect + w_rect*0.86 - d.rat_right.toString().length * (7*h_rect/100); })
-          .attr("x", function(d) { return x_rect + w_rect*0.9 - computeTextWidth(d.rat_right.toString(), '16px Nobile') - 1; })
-          .attr("y", function(d) { return y_rect + h_rect*0.87; })
-          .style("font-size", function(d) { return 16+"px";});
-    
-    console.log('mouse in');
-    
-
-    i.moveToFront();
+      i.select(".vs-counter-text-right")
+            .transition().duration(150)
+            //.attr("x", function(d) { return x_rect + w_rect*0.86 - d.rat_right.toString().length * (7*h_rect/100); })
+            .attr("x", function(d) { return x_rect + w_rect*0.9 - computeTextWidth(d.rat_right.toString(), '16px Nobile') - 1; })
+            .attr("y", function(d) { return y_rect + h_rect*0.87; })
+            .style("font-size", function(d) { return 16+"px";});
+      
+      i.moveToFront();
   }
 
   function onMouseOut(d) {
-    var xoff = 1;
-    var yoff = 1;
-    var wgain = 0;
-    var hgain = 0
-    var halo = 1;
+      var xoff = 1;
+      var yoff = 1;
+      var wgain = 0;
+      var hgain = 0
+      var halo = 1;
 
-    var x_rect = d.x - xoff;
-    var y_rect = d.y - yoff;
-    var w_rect = d.w + wgain;
-    var h_rect = d.h + hgain;
-    
-    var i = d3.select(this);
-    i.select(".vs-bounding-rect")
-          .transition()
-          .duration(150)
-          .attr('x', x_rect)
-          .attr('y', y_rect)
-          .attr('width', w_rect)
-          .attr('height', h_rect)
-          .style("stroke", "black")
-          .style("stroke-width", 3)
-          .style("filter", "none");
+      var x_rect = d.x - xoff;
+      var y_rect = d.y - yoff;
+      var w_rect = d.w + wgain;
+      var h_rect = d.h + hgain;
+      
+      var i = d3.select(this);
+      i.select(".vs-bounding-rect")
+            .transition()
+            .duration(150)
+            .attr('x', x_rect)
+            .attr('y', y_rect)
+            .attr('width', w_rect)
+            .attr('height', h_rect)
+            .style("stroke", "black")
+            .style("stroke-width", 3)
+            .style("filter", "none");
 
-    var w_img = (w_rect -3*halo)/2;
-    var h_img = h_rect - 2*halo ;
-    var y_img = y_rect + halo;
-    var x_img_l = x_rect + halo;
-    var x_img_r = x_rect + (w_rect + halo)/2;
+      var w_img = (w_rect -3*halo)/2;
+      var h_img = h_rect - 2*halo ;
+      var y_img = y_rect + halo;
+      var x_img_l = x_rect + halo;
+      var x_img_r = x_rect + (w_rect + halo)/2;
 
-    i.select(".vs-img-left")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_l + 1)
-          .attr('y', y_img + 1)
-          .attr('width', w_img - 2)
-          .attr('height', h_img - 2);
-    i.select(".vs-img-border-left")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_l)
-          .attr('y', y_img)
-          .attr('width', w_img)
-          .attr('height', h_img);
-    i.select(".vs-img-right")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_r + 2)
-          .attr('y', y_img + 2)
-          .attr('width', w_img - 2)
-          .attr('height', h_img - 2);
-    i.select(".vs-img-border-right")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_r)
-          .attr('y', y_img)
-          .attr('width', w_img)
-          .attr('height', h_img);
+      i.select(".vs-img-left")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_l + 1)
+            .attr('y', y_img + 1)
+            .attr('width', w_img - 2)
+            .attr('height', h_img - 2);
+      i.select(".vs-img-border-left")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_l)
+            .attr('y', y_img)
+            .attr('width', w_img)
+            .attr('height', h_img);
+      i.select(".vs-img-right")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_r + 2)
+            .attr('y', y_img + 2)
+            .attr('width', w_img - 2)
+            .attr('height', h_img - 2);
+      i.select(".vs-img-border-right")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_r)
+            .attr('y', y_img)
+            .attr('width', w_img)
+            .attr('height', h_img);
 
-    i.select(".vs-counter-rect-left")
-          .transition()
-          .duration(150)
-          .attr("x", function(d) { return d.x + d.w*0.1 ; })
-          .attr("y", function(d) { return d.y + d.h*0.7; })
-          .attr("width", function(d) { return d.counter_rect_left_width; })
-          .attr("height", function(d) { return d.h*0.25; })
+      i.select(".vs-counter-rect-left")
+            .transition()
+            .duration(150)
+            .attr("x", function(d) { return d.x + d.w*0.1 ; })
+            .attr("y", function(d) { return d.y + d.h*0.7; })
+            .attr("width", function(d) { return d.counter_rect_left_width; })
+            .attr("height", function(d) { return d.h*0.25; })
 
-    i.select(".vs-counter-rect-right")
-          .transition()
-          .duration(150)
-          .attr("x", function(d) { return d.x + d.w*0.1 + d.counter_rect_left_width; })
-          .attr("y", function(d) { return d.y + d.h*0.70; })
-          .attr("width", function(d) { return d.w*0.8 - d.counter_rect_left_width; })
-          .attr("height", function(d) { return d.h*0.25; })
+      i.select(".vs-counter-rect-right")
+            .transition()
+            .duration(150)
+            .attr("x", function(d) { return d.x + d.w*0.1 + d.counter_rect_left_width; })
+            .attr("y", function(d) { return d.y + d.h*0.70; })
+            .attr("width", function(d) { return d.w*0.8 - d.counter_rect_left_width; })
+            .attr("height", function(d) { return d.h*0.25; })
 
-    i.select(".vs-counter-text-left")
-          .transition().duration(150)
-          .attr("x", function(d) { return d.x + d.w*0.12; })
-          .attr("y", function(d) { return d.y + d.h*0.87; })
-          .style("font-size", function(d) { return d.h*0.16 + 'px';});
-          //.style("font-size", function(d) { return (d.h/100)+"em";});
+      i.select(".vs-counter-text-left")
+            .transition().duration(150)
+            .attr("x", function(d) { return d.x + d.w*0.12; })
+            .attr("y", function(d) { return d.y + d.h*0.87; })
+            .style("font-size", function(d) { return d.h*0.16 + 'px';});
 
-    i.select(".vs-counter-text-right")
-          .transition().duration(150)
-          //.attr("x", function(d) { return d.x + d.w*0.86 - d.rat_right.toString().length * (7*d.h/100); }
-          .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
-          .attr("y", function(d) { return d.y + d.h*0.87; })
-          .style("font-size", function(d) { return d.h*0.16 + 'px';});
+      i.select(".vs-counter-text-right")
+            .transition().duration(150)
+            .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
+            .attr("y", function(d) { return d.y + d.h*0.87; })
+            .style("font-size", function(d) { return d.h*0.16 + 'px';});
 
-    i.select(".vs-close-circle")
-          .style("opacity", 0);
-    i.select(".vs-close-x1")
-          .style("opacity", 0);
-    i.select(".vs-close-x2")
-          .style("opacity", 0);
-
-    console.log('mouse out');
-
-    
+      i.select(".vs-close-circle")
+            .style("opacity", 0);
+      i.select(".vs-close-x1")
+            .style("opacity", 0);
+      i.select(".vs-close-x2")
+            .style("opacity", 0);
   }
 
-  function updateBlock(d, i) {
-    var xoff = 1;
-    var yoff = 1;
-    var wgain = 0;
-    var hgain = 0
-    var halo = 1;
-
-    var x_rect = d.x - xoff;
-    var y_rect = d.y - yoff;
-    var w_rect = d.w + wgain;
-    var h_rect = d.h + hgain;
-    
-    i.select(".vs-bounding-rect")
-          .transition()
-          .duration(150)
-          .attr('x', x_rect)
-          .attr('y', y_rect)
-          .attr('width', w_rect)
-          .attr('height', h_rect);
-
-    var w_img = (w_rect -3*halo)/2;
-    var h_img = h_rect - 2*halo ;
-    var y_img = y_rect + halo;
-    var x_img_l = x_rect + halo;
-    var x_img_r = x_rect + (w_rect + halo)/2;
-
-    i.select(".vs-img-left")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_l + 1)
-          .attr('y', y_img + 1)
-          .attr('width', w_img - 2)
-          .attr('height', h_img - 2);
-    i.select(".vs-img-border-left")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_l)
-          .attr('y', y_img)
-          .attr('width', w_img)
-          .attr('height', h_img);
-    i.select(".vs-img-right")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_r + 2)
-          .attr('y', y_img + 2)
-          .attr('width', w_img - 2)
-          .attr('height', h_img - 2);
-    i.select(".vs-img-border-right")
-          .transition()
-          .duration(150)
-          .attr('x', x_img_r)
-          .attr('y', y_img)
-          .attr('width', w_img)
-          .attr('height', h_img);
-
-    i.select(".vs-counter-rect-left")
-          .transition()
-          .duration(150)
-          .attr("x", function(d) { return d.x + d.w*0.1 ; })
-          .attr("y", function(d) { return d.y + d.h*0.7; })
-          .attr("width", function(d) { return d.counter_rect_left_width; })
-          .attr("height", function(d) { return d.h*0.25; })
-
-    i.select(".vs-counter-rect-right")
-          .transition()
-          .duration(150)
-          .attr("x", function(d) { return d.x + d.w*0.1 + d.counter_rect_left_width; })
-          .attr("y", function(d) { return d.y + d.h*0.70; })
-          .attr("width", function(d) { return d.w*0.8 - d.counter_rect_left_width; })
-          .attr("height", function(d) { return d.h*0.25; })
-
-    i.select(".vs-counter-text-left")
-          .transition().duration(150)
-          .attr("x", function(d) { return d.x + d.w*0.12; })
-          .attr("y", function(d) { return d.y + d.h*0.87; })
-          .style("font-size", function(d) { return d.h*0.16 + 'px';});
-          //.style("font-size", function(d) { return (d.h/100)+"em";});
-
-    i.select(".vs-counter-text-right")
-          .transition().duration(150)
-          //.attr("x", function(d) { return d.x + d.w*0.86 - d.rat_right.toString().length * (7*d.h/100); }
-          .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
-          .attr("y", function(d) { return d.y + d.h*0.87; })
-          .style("font-size", function(d) { return d.h*0.16 + 'px';});
-    
-    console.log('update block');
-
+  function onCloseBlock(d) {
+      console.log('close: ', d.classname);
   }
+  /*function updateBlock(d, i) {
+      var xoff = 1;
+      var yoff = 1;
+      var wgain = 0;
+      var hgain = 0
+      var halo = 1;
 
+      var x_rect = d.x - xoff;
+      var y_rect = d.y - yoff;
+      var w_rect = d.w + wgain;
+      var h_rect = d.h + hgain;
+      
+      i.select(".vs-bounding-rect")
+            .transition()
+            .duration(150)
+            .attr('x', x_rect)
+            .attr('y', y_rect)
+            .attr('width', w_rect)
+            .attr('height', h_rect);
 
+      var w_img = (w_rect -3*halo)/2;
+      var h_img = h_rect - 2*halo ;
+      var y_img = y_rect + halo;
+      var x_img_l = x_rect + halo;
+      var x_img_r = x_rect + (w_rect + halo)/2;
 
+      i.select(".vs-img-left")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_l + 1)
+            .attr('y', y_img + 1)
+            .attr('width', w_img - 2)
+            .attr('height', h_img - 2);
+      i.select(".vs-img-border-left")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_l)
+            .attr('y', y_img)
+            .attr('width', w_img)
+            .attr('height', h_img);
+      i.select(".vs-img-right")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_r + 2)
+            .attr('y', y_img + 2)
+            .attr('width', w_img - 2)
+            .attr('height', h_img - 2);
+      i.select(".vs-img-border-right")
+            .transition()
+            .duration(150)
+            .attr('x', x_img_r)
+            .attr('y', y_img)
+            .attr('width', w_img)
+            .attr('height', h_img);
+
+      i.select(".vs-counter-rect-left")
+            .transition()
+            .duration(150)
+            .attr("x", function(d) { return d.x + d.w*0.1 ; })
+            .attr("y", function(d) { return d.y + d.h*0.7; })
+            .attr("width", function(d) { return d.counter_rect_left_width; })
+            .attr("height", function(d) { return d.h*0.25; })
+
+      i.select(".vs-counter-rect-right")
+            .transition()
+            .duration(150)
+            .attr("x", function(d) { return d.x + d.w*0.1 + d.counter_rect_left_width; })
+            .attr("y", function(d) { return d.y + d.h*0.70; })
+            .attr("width", function(d) { return d.w*0.8 - d.counter_rect_left_width; })
+            .attr("height", function(d) { return d.h*0.25; })
+
+      i.select(".vs-counter-text-left")
+            .transition().duration(150)
+            .attr("x", function(d) { return d.x + d.w*0.12; })
+            .attr("y", function(d) { return d.y + d.h*0.87; })
+            .style("font-size", function(d) { return d.h*0.16 + 'px';});
+            //.style("font-size", function(d) { return (d.h/100)+"em";});
+
+      i.select(".vs-counter-text-right")
+            .transition().duration(150)
+            //.attr("x", function(d) { return d.x + d.w*0.86 - d.rat_right.toString().length * (7*d.h/100); }
+            .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
+            .attr("y", function(d) { return d.y + d.h*0.87; })
+            .style("font-size", function(d) { return d.h*0.16 + 'px';});
+  }*/
 
 
   function draw(vs_bins) {
@@ -624,7 +611,8 @@
               .style("stroke", "black")
               .style("stroke-width", 3)
               .style("opacity", 0)
-              .attr('class', 'vs-close-circle');
+              .attr('class', 'vs-close-circle')
+              .on("click", onCloseBlock);
       vs_rects.append("line")
               //.attr("x1", function(d) { return d.x + d.w - 5; })
               //.attr("y1", function(d) { return d.y - 5; })
@@ -633,7 +621,8 @@
               .attr("stroke-width", 3)
               .attr("stroke", "black")
               .style("opacity", 0)
-              .attr('class', 'vs-close-x1');
+              .attr('class', 'vs-close-x1')
+              .on("click", onCloseBlock);
       vs_rects.append("line")
               //.attr("x1", function(d) { return d.x + d.w + 5; })
               //.attr("y1", function(d) { return d.y - 5; })
@@ -642,7 +631,8 @@
               .attr("stroke-width", 3)
               .attr("stroke", "black")
               .style("opacity", 0)
-              .attr('class', 'vs-close-x2');
+              .attr('class', 'vs-close-x2')
+              .on("click", onCloseBlock);
 
 
       /*vs_rects.append("svg:rect")
@@ -677,9 +667,9 @@
     var iid = Math.floor(Math.random()*240);
     vs_data = [
           "Hello", "world", "normally", "you", "want", "more", "words",
-          //"Hello", "world", "normally", "you", "want", "more", "words",
+          "Hello", "world", "normally", "you", "want", "more", "words",
           "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
-           "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
+          "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
           return {text: d, 
                   dim: 90 + Math.random() * 110, 
                   img_left: imgurls[iid++],

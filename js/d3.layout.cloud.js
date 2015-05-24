@@ -34,8 +34,9 @@
             //timer = setInterval(this.step, 0);
             //this.step();
             cloud.runStep();
-            cloud.computeCenter();
+            //cloud.computeCenter();
             return cloud;
+
 
             /*function step() {
                 var start = +new Date;
@@ -82,6 +83,19 @@
 
         cloud.getData = function() {
             return data;
+        }
+
+        cloud.runCompaction = function() {
+            function getx(d) { return d.x; }
+            function getw(d) { return d.w; }
+            function gety(d) { return d.y; }
+            function geth(d) { return d.h; }
+            function setx(d, x) { return d.x = x; }
+            function sety(d, y) { return d.y = y; }
+            cloud.randomBla(gety, geth, getx, getw, sety);
+            cloud.randomBla(getx, getw, gety, geth, setx);
+            cloud.randomBla(gety, geth, getx, getw, sety);
+            cloud.randomBla(getx, getw, gety, geth, setx);
         }
 
         cloud.randomBla = function(fcoorda, fsizea, fcoordb, fsizeb, fsetcoorda) {
@@ -150,7 +164,7 @@
 
             }
 
-            var c = cloud.computeCenter();
+            var c = {'x':0, 'y':0};//cloud.computeCenter();
             var halo = 10;
             for(var i in data) {
                 d = data[i];
@@ -212,6 +226,7 @@
             }
             if (i >= n) {
                 cloud.stop();
+                cloud.runCompaction();
                 event.end(tags, bounds);
             }
         }
