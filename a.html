@@ -43,7 +43,7 @@
   var setx = function(d, x) { return d.x = x; }
   var sety = function(d, y) { return d.y = y; }
 
-  var bla = 0;
+  var bla = 1;
   svg.on("click", function(d) { 
                       if(bla++%2)
                         d3cloud.randomBla(getx, getw, gety, geth, setx);
@@ -93,8 +93,20 @@
           .style("filter", "url(#drop-shadow)")
           .each("end", function(){
                 i.select(".vs-close-circle")
-                    .attr("cx", function(d) { return x_rect + w_rect - 5; })
-                    .attr("cy", function(d) { return y_rect + 5; })
+                    .attr("cx", x_rect + w_rect - 5)
+                    .attr("cy", y_rect + 5)
+                    .style("opacity", 1);
+                i.select(".vs-close-x1")
+                    .attr("x1", x_rect + w_rect )
+                    .attr("y1", y_rect)
+                    .attr("x2", x_rect + w_rect - 10)
+                    .attr("y2", y_rect + 10)
+                    .style("opacity", 1);
+                i.select(".vs-close-x2")
+                    .attr("x1", x_rect + w_rect - 10)
+                    .attr("y1", y_rect)
+                    .attr("x2", x_rect + w_rect)
+                    .attr("y2", y_rect + 10)
                     .style("opacity", 1);
           });
 
@@ -259,9 +271,10 @@
           .style("font-size", function(d) { return d.h*0.16 + 'px';});
 
     i.select(".vs-close-circle")
-          //.transition().duration(50)
-          //.attr("cx", function(d) { return x_rect + w_rect - 5; })
-          //.attr("cy", function(d) { return y_rect + 5; })
+          .style("opacity", 0);
+    i.select(".vs-close-x1")
+          .style("opacity", 0);
+    i.select(".vs-close-x2")
           .style("opacity", 0);
 
     console.log('mouse out');
@@ -604,14 +617,33 @@
               .attr('class', 'vs-counter-text-right');
 
       vs_rects.append('circle')
-             .attr("cx", function(d) { return d.x + d.w; })
-              .attr("cy", function(d) { return d.y; })
+              //.attr("cx", function(d) { return d.x + d.w; })
+              //.attr("cy", function(d) { return d.y; })
               .attr("r", 14)
               .style("fill", "white")
               .style("stroke", "black")
-              .style("stroke-width", 4)
+              .style("stroke-width", 3)
               .style("opacity", 0)
               .attr('class', 'vs-close-circle');
+      vs_rects.append("line")
+              //.attr("x1", function(d) { return d.x + d.w - 5; })
+              //.attr("y1", function(d) { return d.y - 5; })
+              //.attr("x2", function(d) { return d.x + d.w + 5; })
+              //.attr("y2", function(d) { return d.y + 5; })
+              .attr("stroke-width", 3)
+              .attr("stroke", "black")
+              .style("opacity", 0)
+              .attr('class', 'vs-close-x1');
+      vs_rects.append("line")
+              //.attr("x1", function(d) { return d.x + d.w + 5; })
+              //.attr("y1", function(d) { return d.y - 5; })
+              //.attr("x2", function(d) { return d.x + d.w - 5; })
+              //.attr("y2", function(d) { return d.y + 5; })
+              .attr("stroke-width", 3)
+              .attr("stroke", "black")
+              .style("opacity", 0)
+              .attr('class', 'vs-close-x2');
+
 
       /*vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim; })
