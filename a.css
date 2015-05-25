@@ -1,17 +1,39 @@
-.Aligner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/*@import url(http://fonts.googleapis.com/css?family=Antic+Slab);*/
+
+html,body {
+  height:100%;
 }
 
-.Aligner-item {
-  max-width: 60%;
+h1 {
+  font-family: 'Nobile';
+  font-size:80px;
+  /*color:#DDCCEE;*/
+  color: 'white';
 }
 
-.Aligner-item--top {
-  align-self: flex-start;
+.lead {
+  /*color:#DDCCEE;*/
+  color: 'white';
 }
 
-.Aligner-item--bottom {
-  align-self: flex-end;
+
+/* Custom container */
+.container-full {
+  margin: 0 auto;
+  width: 100%;
+  min-height:100%;
+  /*background-color:#110022;*/
+  background-color: 'white';
+  color:#eee;
+  overflow:hidden;
+  pointer-events: fill;
+}
+
+.container-full a {
+  color:#efefef;
+  text-decoration:none;
+}
+
+.v-center {
+  margin-top:7%;
 }

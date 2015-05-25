@@ -5,7 +5,7 @@
         var size = [256, 256];
         var text = cloudText;
         var padding = cloudPadding;
-        var max_expand = 20;
+        var block_halo = [15, 15];
         var spiral = archimedeanSpiral;
         var vs_bins = [];
         var timeInterval = Infinity;
@@ -83,6 +83,14 @@
 
         cloud.getData = function() {
             return data;
+        }
+
+        cloud.getSize = function() {
+            return size;
+        }
+
+        cloud.getBlockHalo = function() {
+            return block_halo;
         }
 
         cloud.runCompaction = function() {
@@ -245,12 +253,12 @@
         };
 
         function place(board, tag, bounds) {
-            var perimeter = [{x: max_expand, y: max_expand}, 
-                             {x: size[0]-max_expand, y: size[1]-max_expand}];
+            var perimeter = [{x: block_halo[0], y: block_halo[1]}, 
+                             {x: size[0]-block_halo[0], y: size[1]-block_halo[1]}];
             var startX = tag.x;
             var startY = tag.y;
-            var max_width = size[0] - 2*max_expand;
-            var max_height = size[1] - 2*max_expand;
+            var max_width = size[0] - 2*block_halo[0];
+            var max_height = size[1] - 2*block_halo[1];
             var maxDelta = Math.sqrt(max_width*max_width + max_height*max_height);
             var s = spiral(size);
             var dt = Math.random() < .5 ? 1 : -1;
@@ -268,8 +276,8 @@
               tag.x = startX + dx;
               tag.y = startY + dy;
 
-              if (tag.x < max_expand || tag.y < max_expand ||
-                  tag.x + tag.w > max_width || tag.y + tag.h > max_height) continue;
+              if (tag.x < block_halo[0] || tag.y < block_halo[1] ||
+                  tag.x + tag.w > (size[0] - block_halo[0]) || tag.y + tag.h > (size[1] - block_halo[1])) continue;
               // TODO only check for collisions within current bounds.
               if (!bounds || !cloudCollide(tag, board, max_width)) {
                   if (!bounds || !collideRects(tag, bounds)) {
@@ -427,12 +435,6 @@
 
 
 d3.selection.prototype.moveToFront = function() {
-    return this.each(function(){
-        this.parentNode.appendChild(this);
-    });
-};
-
-d3.selection.prototype.compact = function() {
     return this.each(function(){
         this.parentNode.appendChild(this);
     });
