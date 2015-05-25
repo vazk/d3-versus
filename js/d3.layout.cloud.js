@@ -7,7 +7,7 @@
         var padding = cloudPadding;
         var block_halo = [15, 15];
         var spiral = archimedeanSpiral;
-        var vs_bins = [];
+        //var vs_bins = [];
         var timeInterval = Infinity;
         var event = d3.dispatch("end");
         var timer = null;
@@ -17,16 +17,16 @@
         cloud.start = function() {
             //var board = [];
             //var bounds = null;
-            var n = vs_bins.length;
+            //var n = vs_bins.length;
             //var i = -1;
             //var tags = [];
-            data = vs_bins.map(function(d, i) {
+            /*data = vs_bins.map(function(d, i) {
                   d.text = text.call(this, d, i);
                   d.padding = padding.call(this, d, i);
                   d.w = d.dim;
                   d.h = d.dim*0.5;
                   return d;
-                }).sort(function(a, b) { return b.dim - a.dim; });
+                }).sort(function(a, b) { return b.dim - a.dim; });*/
 
             if (timer) {
                 clearInterval(timer);
@@ -36,32 +36,12 @@
             cloud.runStep();
             //cloud.computeCenter();
             return cloud;
+        }
 
-
-            /*function step() {
-                var start = +new Date;
-                var d;
-                while (+new Date - start < timeInterval && ++i < n && timer) {
-                    d = data[i];
-                    d.x = (size[0]>>1) + (Math.random() *20);
-                    d.y = (size[1]>>1) + (Math.random() *20);
-                    //console.log("STEP: ", d.text, ", ", d.x, ", ", d.y,", ",d.w,", ",d.h);
-                    if(place(board, d, bounds)) {
-                        tags.push(d);
-                        if (bounds) cloudBounds(bounds, d);
-                        else bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
-                        // Temporary hack
-                        d.x -= size[0] >> 1;
-                        d.y -= size[1] >> 1;
-                    }
-                }
-                if (i >= n) {
-                    cloud.stop();
-                    event.end(tags, bounds);
-                }
-            }*/
-
-
+        cloud.reshape = function() {
+            cloud.runCompaction();
+            event.end();
+            return cloud;
         }
         
         cloud.computeCenter = function() {
@@ -85,6 +65,30 @@
             return data;
         }
 
+        cloud.setData = function(blocks) {
+            blocks.sort(function(a, b) { 
+                          return b.dim - a.dim; 
+                        });
+            data = blocks.map(function(d, i) {
+                    d.text = text.call(this, d, i);
+                    d.padding = padding.call(this, d, i);
+                    d.w = d.dim;
+                    d.h = d.dim*0.5;
+                    return d;
+                });
+        };
+
+        cloud.removeData = function(d) {
+            for(var i = 0; i < data.length; ++i) {
+                var dd = data[i];
+                if(dd.classname === d.classname) {
+                    console.log('removing id: ', i, ', ', dd.classname);
+                    data.splice(i,1);
+                    break;
+                }
+            }
+        }
+
         cloud.getSize = function() {
             return size;
         }
@@ -104,6 +108,10 @@
             cloud.randomBla(getx, getw, gety, geth, setx);
             cloud.randomBla(gety, geth, getx, getw, sety);
             cloud.randomBla(getx, getw, gety, geth, setx);
+        }
+
+        cloud.randomFoo = function() {
+            //data.splice(0,1);
         }
 
         cloud.randomBla = function(fcoorda, fsizea, fcoordb, fsizeb, fsetcoorda) {
@@ -215,8 +223,8 @@
             var board = [];
             var bounds = null;
             var tags = [];
-            var n = vs_bins.length;
-            //var n = data.length;
+            //var n = vs_bins.length;
+            var n = data.length;
             var i = -1;
             while (+new Date - start < timeInterval && ++i < n && timer) {
                 d = data[i];
@@ -286,15 +294,23 @@
                   }
               }
             }
+            console.log('couldnt fit ', tag.classname);
             return false;
         }
 
 
-        cloud.vs_bins = function(x) {
+        /*cloud.vs_bins = function(x) {
             if (!arguments.length) return vs_bins;
             vs_bins = x;
+            data = vs_bins.map(function(d, i) {
+                    d.text = text.call(this, d, i);
+                    d.padding = padding.call(this, d, i);
+                    d.w = d.dim;
+                    d.h = d.dim*0.5;
+                    return d;
+                }).sort(function(a, b) { return b.dim - a.dim; });
             return cloud;
-        };
+        };*/
 
         cloud.size = function(x) {
             if (!arguments.length) return size;

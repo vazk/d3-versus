@@ -66,36 +66,16 @@ window.onload = function() {
   var  svg_height = window.innerHeight * 0.5;
   var  svg_width = bla.clientWidth;
 
-  //var svg_height = 600;
-  //var svg_width = 900;
-
   var div_svg = d3.select("#div_svg");
   var svg = div_svg.append("svg");
 
   var d3cloud = d3.layout.cloud();
 
+  var vs_data = [];
+  var vs_rectdata = [];
+  var vs_rects = [];
+
   svg.style("background","white");
-
-  /*var getx = function(d) { return d.x; }
-  var getw = function(d) { return d.w; }
-  var gety = function(d) { return d.y; }
-  var geth = function(d) { return d.h; }
-  var setx = function(d, x) { return d.x = x; }
-  var sety = function(d, y) { return d.y = y; }
-
-  var bla = 1;
-  svg.on("click", function(d) { 
-                      if(bla++%2)
-                        d3cloud.randomBla(getx, getw, gety, geth, setx);
-                      else
-                        d3cloud.randomBla(gety, geth, getx, getw, sety);
-                      var data = d3cloud.getData();
-                      for(var i in data) {
-                          var d = data[i];
-                          var block = d3.select("."+d.classname)
-                          updateBlock(d, block);
-                      }
-                  });*/
 
 
   function computeFontSize(w, textLength) { 
@@ -229,6 +209,9 @@ window.onload = function() {
   }
 
   function onMouseOut(d) {
+      var i = d3.select(this);
+      updateBlock(d, i);
+      /*
       var xoff = 1;
       var yoff = 1;
       var wgain = 0;
@@ -320,13 +303,35 @@ window.onload = function() {
       i.select(".vs-close-x1")
             .style("opacity", 0);
       i.select(".vs-close-x2")
-            .style("opacity", 0);
+            .style("opacity", 0);*/
   }
 
   function onCloseBlock(d) {
       console.log('close: ', d.classname);
+
+      d3cloud.randomFoo();
+      var di = vs_data.indexOf(d);
+      vs_data.splice(di,1);
+      console.log('vs_data: ', vs_data.length);
+      
+      //vs_rectdata = maing.selectAll('.vs-block').data(vs_data).exit().remove();
+      vs_rectdata = maing.selectAll('.vs-block').data([]).exit().remove();
+      d3cloud.setData(vs_data);
+      //d3cloud.removeData(d);
+      d3cloud.reshape();
+
+      //var data = d3cloud.getData();
+      //console.log('d3data: ', data.length);
+      
+      /*for(var i in data) {
+          var d = data[i];
+          var block = d3.select("."+d.classname)
+          updateBlock(d, block);
+      }*/
+                 
   }
-  /*function updateBlock(d, i) {
+  
+  function updateBlock(d, i) {
       var xoff = 1;
       var yoff = 1;
       var wgain = 0;
@@ -344,7 +349,10 @@ window.onload = function() {
             .attr('x', x_rect)
             .attr('y', y_rect)
             .attr('width', w_rect)
-            .attr('height', h_rect);
+            .attr('height', h_rect)
+            .style("stroke", "black")
+            .style("stroke-width", 3)
+            .style("filter", "none");
 
       var w_img = (w_rect -3*halo)/2;
       var h_img = h_rect - 2*halo ;
@@ -410,10 +418,17 @@ window.onload = function() {
             .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
             .attr("y", function(d) { return d.y + d.h*0.87; })
             .style("font-size", function(d) { return d.h*0.16 + 'px';});
-  }*/
+
+      i.select(".vs-close-circle")
+            .style("opacity", 0);
+      i.select(".vs-close-x1")
+            .style("opacity", 0);
+      i.select(".vs-close-x2")
+            .style("opacity", 0);
+  }
 
 
-  function draw(vs_bins) {
+  function draw(tags) {
       var borderPath = svg.append("rect")
           .attr("x", 0)
           .attr("y", 0)
@@ -510,19 +525,23 @@ window.onload = function() {
           .attr("in", "SourceGraphic");
 
 
-      var g = svg.attr('width',  svg_width)
+      maing = svg.attr('width',  svg_width)
                  .attr('height', svg_height)
                  .append('g')
                    .attr('transform', 'translate('+svg_width/2+','+svg_height/2+')')
                    .attr('class', 'vs-main-g');
 
-      vs_rects = g.selectAll('rect')
-                  .data(vs_bins)
+      vs_rectdata = maing.selectAll('.vs-block')
+                      .data(vs_data);
+
+      vs_rects = vs_rectdata
                     .enter()
                       .append('g')
-                        .attr('class', function(d) { return d.classname; })
+                        .attr('class', function(d) { return d.classname + ' vs-block'; })
                         .on("mouseenter", onMouseIn)
                         .on("mouseleave", onMouseOut);
+      //vs_rectdata.exit().remove();
+
       var xoff = 1;
       var yoff = 1;
       var wgain = 0;
@@ -596,9 +615,7 @@ window.onload = function() {
 
 
       vs_rects.append("svg:rect")
-              //.attr("x", function(d) { return d.x + rat_w_halo; })
               .attr("x", function(d) { return d.x + d.w*0.1 ; })
-              //.attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
               .attr("y", function(d) { return d.y + d.h*0.7; })
               .attr("width", function(d) { 
                       d.counter_rect_left_width = Math.min(d.w*0.8-15, Math.max(15,(d.rat_left/(d.rat_right +                                                         d.rat_left))*d.w*0.8 - 1));
@@ -655,8 +672,8 @@ window.onload = function() {
               .attr('class', 'vs-counter-text-right');
 
       vs_rects.append('circle')
-              //.attr("cx", function(d) { return d.x + d.w; })
-              //.attr("cy", function(d) { return d.y; })
+              .attr("cx", function(d) { return d.x + d.w; })
+              .attr("cy", function(d) { return d.y; })
               .attr("r", 14)
               .style("fill", "white")
               .style("stroke", "black")
@@ -665,20 +682,20 @@ window.onload = function() {
               .attr('class', 'vs-close-circle')
               .on("click", onCloseBlock);
       vs_rects.append("line")
-              //.attr("x1", function(d) { return d.x + d.w - 5; })
-              //.attr("y1", function(d) { return d.y - 5; })
-              //.attr("x2", function(d) { return d.x + d.w + 5; })
-              //.attr("y2", function(d) { return d.y + 5; })
+              .attr("x1", function(d) { return d.x + d.w - 5; })
+              .attr("y1", function(d) { return d.y - 5; })
+              .attr("x2", function(d) { return d.x + d.w + 5; })
+              .attr("y2", function(d) { return d.y + 5; })
               .attr("stroke-width", 3)
               .attr("stroke", "black")
               .style("opacity", 0)
               .attr('class', 'vs-close-x1')
               .on("click", onCloseBlock);
       vs_rects.append("line")
-              //.attr("x1", function(d) { return d.x + d.w + 5; })
-              //.attr("y1", function(d) { return d.y - 5; })
-              //.attr("x2", function(d) { return d.x + d.w - 5; })
-              //.attr("y2", function(d) { return d.y + 5; })
+              .attr("x1", function(d) { return d.x + d.w + 5; })
+              .attr("y1", function(d) { return d.y - 5; })
+              .attr("x2", function(d) { return d.x + d.w - 5; })
+              .attr("y2", function(d) { return d.y + 5; })
               .attr("stroke-width", 3)
               .attr("stroke", "black")
               .style("opacity", 0)
@@ -715,26 +732,27 @@ window.onload = function() {
       return text;
   }
   function startAll() {
-    var iid = Math.floor(Math.random()*240);
-    vs_data = [
-          //"Hello", "world", "normally", "you", "want", "more", "words",
-          "Hello", "world", "normally", "you", "want", "more", "words",
-          "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
-          "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
-          return {text: d, 
-                  dim: 50 + Math.random() * 140, 
-                  img_left: imgurls[iid++],
-                  img_right: imgurls[iid++],
-                  rat_left: Math.floor(Math.random()*200),
-                  rat_right: Math.floor(Math.random()*200),
-                  classname: stringGen(8)};
-        });
+      var iid = Math.floor(Math.random()*240);
+      vs_data = [
+            //"Hello", "world", "normally", "you", "want", "more", "words",
+            "Hello", "world", "normally", "you", "want", "more", "words",
+            "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
+            "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
+            return {text: d, 
+                    dim: 50 + Math.random() * 140, 
+                    img_left: imgurls[iid++],
+                    img_right: imgurls[iid++],
+                    rat_left: Math.floor(Math.random()*200),
+                    rat_right: Math.floor(Math.random()*200),
+                    classname: stringGen(8)};
+          });
 
-    d3cloud.size([svg_width, svg_height])
-        .vs_bins(vs_data)
-        .padding(5)
-        .on("end", draw)
-        .start();
+      d3cloud.setData(vs_data);
+      d3cloud.size([svg_width, svg_height])
+          //.vs_bins(vs_data)
+          .padding(5)
+          .on("end", draw)
+          .start();
   }
 
   //Imgur.fetch(300, startAll);
