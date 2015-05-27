@@ -2,7 +2,7 @@
 // Algorithm due to Jonathan Feinberg, http://static.mrfeinberg.com/bv_ch03.pdf
 (function() {
     function cloud() {
-        var size = [256, 256];
+        var size = null;
         var text = cloudText;
         var padding = cloudPadding;
         var block_halo = [15, 15];
@@ -11,30 +11,19 @@
         var timeInterval = Infinity;
         var event = d3.dispatch("end");
         var timer = null;
-        var data = null;
+        var data = [];
+        var placement_board = [];
+        var placement_bounds = null;
+        var placement_tags = [];
         var cloud = {};
 
         cloud.start = function() {
-            //var board = [];
-            //var bounds = null;
-            //var n = vs_bins.length;
-            //var i = -1;
-            //var tags = [];
-            /*data = vs_bins.map(function(d, i) {
-                  d.text = text.call(this, d, i);
-                  d.padding = padding.call(this, d, i);
-                  d.w = d.dim;
-                  d.h = d.dim*0.5;
-                  return d;
-                }).sort(function(a, b) { return b.dim - a.dim; });*/
-
             if (timer) {
                 clearInterval(timer);
             }
-            //timer = setInterval(this.step, 0);
-            //this.step();
-            cloud.runStep();
-            //cloud.computeCenter();
+            timer = setInterval(this.step, 0);
+            this.step();
+
             return cloud;
         }
 
@@ -59,6 +48,10 @@
             y /= total_weight;
             console.log("center: ", x, ", ", y);
             return {'x': x, 'y': y};
+        }
+
+        cloud.setSize = function(s) {
+            size = s;
         }
 
         cloud.getData = function() {
@@ -212,11 +205,31 @@
             }
         }
 
-        cloud.runStep = function() {
-            timer = setInterval(this.step, 0);
-            cloud.step();
+        cloud.addBlock = function(d, max_tries) {
+            d.w = d.dim;
+            d.h = d.dim*0.5;
+            d.padding = 5;
+            for(var tries = 0; tries < max_tries; ++tries) {
+                d.x = (size[0]>>1) + (Math.random() *20);
+                d.y = (size[1]>>1) + (Math.random() *20);
+                if(place(placement_board, placement_bounds, d)) {
+                    placement_tags.push(d);
+                    if (placement_bounds) {
+                        cloudBounds(placement_bounds, d);
+                    } else {
+                        placement_bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
+                    }
+                    // Temporary hack
+                    d.x -= size[0] >> 1;
+                    d.y -= size[1] >> 1;
+                    data.push(d);
+                    //cloud.runCompaction();
+                    return true;
+                }
+            } 
+            return false;
         }
-
+        /*
         cloud.step = function() {
             var start = +new Date;
             var d;
@@ -231,7 +244,7 @@
                 d.x = (size[0]>>1) + (Math.random() *20);
                 d.y = (size[1]>>1) + (Math.random() *20);
                 //console.log("STEP: ", d.text, ", ", d.x, ", ", d.y,", ",d.w,", ",d.h);
-                if(place(board, d, bounds)) {
+                if(place(board, bounds, d)) {
                     tags.push(d);
                     if (bounds) cloudBounds(bounds, d);
                     else bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
@@ -246,6 +259,7 @@
                 event.end(tags, bounds);
             }
         }
+
         cloud.stop = function() {
             if (timer) {
               clearInterval(timer);
@@ -258,13 +272,13 @@
             if (!arguments.length) return timeInterval;
             timeInterval = x == null ? Infinity : x;
             return cloud;
-        };
+        };*/
 
-        function place(board, tag, bounds) {
+        function place(board,  bounds, d) {
             var perimeter = [{x: block_halo[0], y: block_halo[1]}, 
                              {x: size[0]-block_halo[0], y: size[1]-block_halo[1]}];
-            var startX = tag.x;
-            var startY = tag.y;
+            var startX = d.x;
+            var startY = d.y;
             var max_width = size[0] - 2*block_halo[0];
             var max_height = size[1] - 2*block_halo[1];
             var maxDelta = Math.sqrt(max_width*max_width + max_height*max_height);
@@ -281,20 +295,20 @@
 
               if (Math.min(dx, dy) > maxDelta) break;
 
-              tag.x = startX + dx;
-              tag.y = startY + dy;
+              d.x = startX + dx;
+              d.y = startY + dy;
 
-              if (tag.x < block_halo[0] || tag.y < block_halo[1] ||
-                  tag.x + tag.w > (size[0] - block_halo[0]) || tag.y + tag.h > (size[1] - block_halo[1])) continue;
+              if (d.x < block_halo[0] || d.y < block_halo[1] ||
+                  d.x + d.w > (size[0] - block_halo[0]) || d.y + d.h > (size[1] - block_halo[1])) continue;
               // TODO only check for collisions within current bounds.
-              if (!bounds || !cloudCollide(tag, board, max_width)) {
-                  if (!bounds || !collideRects(tag, bounds)) {
-                      board.push({"x":tag.x,"y":tag.y,"w":tag.w,"h":tag.h});
+              if (!bounds || !cloudCollide(d, board, max_width)) {
+                  if (!bounds || !collideRects(d, bounds)) {
+                      board.push({"x":d.x,"y":d.y,"w":d.w,"h":d.h});
                       return true;
                   }
               }
             }
-            console.log('couldnt fit ', tag.classname);
+            console.log('couldnt fit ', d.classname);
             return false;
         }
 
@@ -305,7 +319,6 @@
             data = vs_bins.map(function(d, i) {
                     d.text = text.call(this, d, i);
                     d.padding = padding.call(this, d, i);
-                    d.w = d.dim;
                     d.h = d.dim*0.5;
                     return d;
                 }).sort(function(a, b) { return b.dim - a.dim; });

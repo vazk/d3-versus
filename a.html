@@ -316,10 +316,10 @@ window.onload = function() {
       
       //vs_rectdata = maing.selectAll('.vs-block').data(vs_data).exit().remove();
       vs_rectdata = maing.selectAll('.vs-block').data([]).exit().remove();
-      d3cloud.setData(vs_data);
-      //d3cloud.removeData(d);
-      d3cloud.reshape();
-
+      //d3cloud.setData(vs_data);
+      d3cloud.removeData(d);
+      draw(d3cloud.getData());
+      //d3cloud.reshape();
       //var data = d3cloud.getData();
       //console.log('d3data: ', data.length);
       
@@ -428,7 +428,7 @@ window.onload = function() {
   }
 
 
-  function draw(tags) {
+  function draw(vs_data) {
       var borderPath = svg.append("rect")
           .attr("x", 0)
           .attr("y", 0)
@@ -745,14 +745,20 @@ window.onload = function() {
                     rat_left: Math.floor(Math.random()*200),
                     rat_right: Math.floor(Math.random()*200),
                     classname: stringGen(8)};
-          });
+          }).sort(function(a, b) { return b.dim - a.dim; });
+      d3cloud.setSize([svg_width, svg_height]);
+      for(var i = 0; i < vs_data.length; ++i) {
+          if(d3cloud.addBlock(vs_data[i], 3) == false) break;
+      }
+      d3cloud.runCompaction();
+      draw(d3cloud.getData());
 
-      d3cloud.setData(vs_data);
-      d3cloud.size([svg_width, svg_height])
+      //d3cloud.setData(vs_data);
+      //d3cloud.size([svg_width, svg_height])
           //.vs_bins(vs_data)
-          .padding(5)
-          .on("end", draw)
-          .start();
+          //.padding(5)
+          //.on("end", draw)
+          //.start();
   }
 
   //Imgur.fetch(300, startAll);
