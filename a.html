@@ -56,7 +56,6 @@
 
 <script>
 window.onload = function() {
-  var vs_data = null;
   var fill = d3.scale.category20();
 
   var canvas = document.createElement('canvas');
@@ -71,7 +70,7 @@ window.onload = function() {
 
   var d3cloud = d3.layout.cloud();
 
-  var vs_data = [];
+  var inputData = [];
   var vs_rectdata = [];
   var vs_rects = [];
 
@@ -88,6 +87,7 @@ window.onload = function() {
   }
 
   function onMouseIn(d) {
+      console.log('m: ', d.classname);
       var wgain = 220-d.w;
       var hgain = 110-d.h;
       var xoff = wgain/2;
@@ -211,123 +211,51 @@ window.onload = function() {
   function onMouseOut(d) {
       var i = d3.select(this);
       updateBlock(d, i);
-      /*
-      var xoff = 1;
-      var yoff = 1;
-      var wgain = 0;
-      var hgain = 0
-      var halo = 1;
-
-      var x_rect = d.x - xoff;
-      var y_rect = d.y - yoff;
-      var w_rect = d.w + wgain;
-      var h_rect = d.h + hgain;
-      
-      var i = d3.select(this);
-      i.select(".vs-bounding-rect")
-            .transition()
-            .duration(150)
-            .attr('x', x_rect)
-            .attr('y', y_rect)
-            .attr('width', w_rect)
-            .attr('height', h_rect)
-            .style("stroke", "black")
-            .style("stroke-width", 3)
-            .style("filter", "none");
-
-      var w_img = (w_rect -3*halo)/2;
-      var h_img = h_rect - 2*halo ;
-      var y_img = y_rect + halo;
-      var x_img_l = x_rect + halo;
-      var x_img_r = x_rect + (w_rect + halo)/2;
-
-      i.select(".vs-img-left")
-            .transition()
-            .duration(150)
-            .attr('x', x_img_l + 1)
-            .attr('y', y_img + 1)
-            .attr('width', w_img - 2)
-            .attr('height', h_img - 2);
-      i.select(".vs-img-border-left")
-            .transition()
-            .duration(150)
-            .attr('x', x_img_l)
-            .attr('y', y_img)
-            .attr('width', w_img)
-            .attr('height', h_img);
-      i.select(".vs-img-right")
-            .transition()
-            .duration(150)
-            .attr('x', x_img_r + 2)
-            .attr('y', y_img + 2)
-            .attr('width', w_img - 2)
-            .attr('height', h_img - 2);
-      i.select(".vs-img-border-right")
-            .transition()
-            .duration(150)
-            .attr('x', x_img_r)
-            .attr('y', y_img)
-            .attr('width', w_img)
-            .attr('height', h_img);
-
-      i.select(".vs-counter-rect-left")
-            .transition()
-            .duration(150)
-            .attr("x", function(d) { return d.x + d.w*0.1 ; })
-            .attr("y", function(d) { return d.y + d.h*0.7; })
-            .attr("width", function(d) { return d.counter_rect_left_width; })
-            .attr("height", function(d) { return d.h*0.25; })
-
-      i.select(".vs-counter-rect-right")
-            .transition()
-            .duration(150)
-            .attr("x", function(d) { return d.x + d.w*0.1 + d.counter_rect_left_width; })
-            .attr("y", function(d) { return d.y + d.h*0.70; })
-            .attr("width", function(d) { return d.w*0.8 - d.counter_rect_left_width; })
-            .attr("height", function(d) { return d.h*0.25; })
-
-      i.select(".vs-counter-text-left")
-            .transition().duration(150)
-            .attr("x", function(d) { return d.x + d.w*0.12; })
-            .attr("y", function(d) { return d.y + d.h*0.87; })
-            .style("font-size", function(d) { return d.h*0.16 + 'px';});
-
-      i.select(".vs-counter-text-right")
-            .transition().duration(150)
-            .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
-            .attr("y", function(d) { return d.y + d.h*0.87; })
-            .style("font-size", function(d) { return d.h*0.16 + 'px';});
-
-      i.select(".vs-close-circle")
-            .style("opacity", 0);
-      i.select(".vs-close-x1")
-            .style("opacity", 0);
-      i.select(".vs-close-x2")
-            .style("opacity", 0);*/
   }
 
   function onCloseBlock(d) {
       console.log('close: ', d.classname);
-
-      d3cloud.randomFoo();
-      var di = vs_data.indexOf(d);
-      vs_data.splice(di,1);
-      console.log('vs_data: ', vs_data.length);
-      
-      //vs_rectdata = maing.selectAll('.vs-block').data(vs_data).exit().remove();
-      vs_rectdata = maing.selectAll('.vs-block').data([]).exit().remove();
-      //d3cloud.setData(vs_data);
+      var i = d3.selectAll('.' + d.classname).remove();
       d3cloud.removeData(d);
-      draw(d3cloud.getData());
+
+      d3cloud.rePlace(3);
+      d3cloud.runCompaction();
+
+
+      //vs_rectdata = maing.selectAll('.vs-block').data(vs_data).exit().remove();
+      //vs_rectdata = rndMain.selectAll('.vs-block').data([]).exit().remove();
+      //d3cloud.setData([]);
+      //updateRendering(inputData);
+      //updateRendering(d3cloud.getData());
       //d3cloud.reshape();
       //var data = d3cloud.getData();
       //console.log('d3data: ', data.length);
+
       
-      /*for(var i in data) {
+      /*var newData = [];
+      for(var i = 0; i < inputData.length; ++i) {
+          var d = inputData[i];
+          if(d3cloud.addBlock(d, 3) == false) break;
+          inputData.splice(i,1);
+          newData.push(d);
+      }*/
+      if(inputData.length) {
+          var d = inputData[0];
+          if(d3cloud.addBlock(d, 3)) {
+              updateRendering([d]);
+              inputData.splice(0,1);
+              console.log('added successfully');
+          }
+      }
+
+      d3cloud.runCompaction();
+      var data = d3cloud.getData();
+      console.log('now -  data: ', data.length, ' input: ', inputData.length);
+      for(var i in data) {
           var d = data[i];
           var block = d3.select("."+d.classname)
           updateBlock(d, block);
-      }*/
+      }
                  
   }
   
@@ -377,8 +305,8 @@ window.onload = function() {
       i.select(".vs-img-right")
             .transition()
             .duration(150)
-            .attr('x', x_img_r + 2)
-            .attr('y', y_img + 2)
+            .attr('x', x_img_r + 1)
+            .attr('y', y_img + 1)
             .attr('width', w_img - 2)
             .attr('height', h_img - 2);
       i.select(".vs-img-border-right")
@@ -420,16 +348,31 @@ window.onload = function() {
             .style("font-size", function(d) { return d.h*0.16 + 'px';});
 
       i.select(".vs-close-circle")
+            .attr("cx", function(d) { return d.x + d.w; })
+            .attr("cy", function(d) { return d.y; })
             .style("opacity", 0);
       i.select(".vs-close-x1")
+            .attr("x1", function(d) { return d.x + d.w - 5; })
+            .attr("y1", function(d) { return d.y - 5; })
+            .attr("x2", function(d) { return d.x + d.w + 5; })
+            .attr("y2", function(d) { return d.y + 5; })
             .style("opacity", 0);
       i.select(".vs-close-x2")
+            .attr("x1", function(d) { return d.x + d.w + 5; })
+            .attr("y1", function(d) { return d.y - 5; })
+            .attr("x2", function(d) { return d.x + d.w - 5; })
+            .attr("y2", function(d) { return d.y + 5; })
             .style("opacity", 0);
   }
 
+  var rndBorderPath;
+  var rndGradientLeft;
+  var rndGradiendRight;
+  var rndFfilter;
+  var rndMain;
 
-  function draw(vs_data) {
-      var borderPath = svg.append("rect")
+  function setupRendering() {
+      rndBorderPath = svg.append("rect")
           .attr("x", 0)
           .attr("y", 0)
           .attr("height", svg_height)
@@ -439,7 +382,7 @@ window.onload = function() {
           //.style("stroke-width", 2)
           ;
 
-      var gradient_left = svg.append("svg:defs")
+      rndGradientLeft = svg.append("svg:defs")
           .append("svg:linearGradient")
           .attr("id", "gradient_left")
           .attr("x1", "0%")
@@ -448,24 +391,24 @@ window.onload = function() {
           .attr("y2", "0%")
           .attr("spreadMethod", "pad");
 
-      gradient_left.append("svg:stop")
+      rndGradientLeft.append("svg:stop")
           .attr("offset", "0%")
           .attr("stop-color", "#25BADF")
           .attr("stop-opacity", 1);
 
 
-      gradient_left.append("svg:stop")
+      rndGradientLeft.append("svg:stop")
           .attr("offset", "50%")
           .attr("stop-color", "#1BCB9D")//27 203 157
           .attr("stop-opacity", 1);
 
-      gradient_left.append("svg:stop")
+      rndGradientLeft.append("svg:stop")
           .attr("offset", "100%")
           .attr("stop-color", "#25BADF")
           .attr("stop-opacity", 1);
 
 
-      var gradient_right = svg.append("svg:defs")
+      rndGradientRight = svg.append("svg:defs")
           .append("svg:linearGradient")
           .attr("id", "gradient_right")
           .attr("x1", "0%")
@@ -475,17 +418,17 @@ window.onload = function() {
           .attr("spreadMethod", "pad");
 
 
-      gradient_right.append("svg:stop")
+      rndGradientRight.append("svg:stop")
           .attr("offset", "0%")
           .attr("stop-color", "#F98829")
           .attr("stop-opacity", 1);
 
-      gradient_right.append("svg:stop")
+      rndGradientRight.append("svg:stop")
           .attr("offset", "50%")
           .attr("stop-color", "#F8750B")//248 117 11
           .attr("stop-opacity", 1);
 
-      gradient_right.append("svg:stop")
+      rndGradientRight.append("svg:stop")
           .attr("offset", "100%")
           .attr("stop-color", "#CE173E")
           .attr("stop-opacity", 1);
@@ -495,21 +438,21 @@ window.onload = function() {
        
       // create filter with id #drop-shadow
       // height=130% so that the shadow is not clipped
-      var filter = defs.append("filter")
+      rndFilter = defs.append("filter")
           .attr("id", "drop-shadow")
           .attr("height", "130%");
        
       // SourceAlpha refers to opacity of graphic that this filter will be applied to
       // convolve that with a Gaussian with standard deviation 3 and store result
       // in blur
-      filter.append("feGaussianBlur")
+      rndFilter.append("feGaussianBlur")
           .attr("in", "SourceAlpha")
           .attr("stdDeviation", 5)
           .attr("result", "blur");
        
       // translate output of Gaussian blur to the right and downwards with 2px
       // store result in offsetBlur
-      filter.append("feOffset")
+      rndFilter.append("feOffset")
           .attr("in", "blur")
           .attr("dx", 0)
           .attr("dy", 0)
@@ -517,7 +460,7 @@ window.onload = function() {
        
       // overlay original SourceGraphic over translated blurred opacity by using
       // feMerge filter. Order of specifying inputs is important!
-      var feMerge = filter.append("feMerge");
+      var feMerge = rndFilter.append("feMerge");
        
       feMerge.append("feMergeNode")
           .attr("in", "offsetBlur")
@@ -525,23 +468,15 @@ window.onload = function() {
           .attr("in", "SourceGraphic");
 
 
-      maing = svg.attr('width',  svg_width)
-                 .attr('height', svg_height)
-                 .append('g')
-                   .attr('transform', 'translate('+svg_width/2+','+svg_height/2+')')
-                   .attr('class', 'vs-main-g');
+      rndMain = svg.attr('width',  svg_width)
+                   .attr('height', svg_height)
+                   .append('g')
+                      .attr('transform', 'translate('+svg_width/2+','+svg_height/2+')')
+                      .attr('class', 'vs-main-g');
 
-      vs_rectdata = maing.selectAll('.vs-block')
-                      .data(vs_data);
+  }
 
-      vs_rects = vs_rectdata
-                    .enter()
-                      .append('g')
-                        .attr('class', function(d) { return d.classname + ' vs-block'; })
-                        .on("mouseenter", onMouseIn)
-                        .on("mouseleave", onMouseOut);
-      //vs_rectdata.exit().remove();
-
+  function updateRendering(vsData) {
       var xoff = 1;
       var yoff = 1;
       var wgain = 0;
@@ -561,9 +496,22 @@ window.onload = function() {
       var rat_h_halo = -3;
       var rat_w_halo = 13;
       var h_dim = 24;
+
+      //for(var a = 0; a < vsData.length; ++a) console.log('upd: ', vsData[a].classname);
+
+      vs_rectdata = rndMain.selectAll('.vs-block')
+                      .data(vsData);
+
+
+      vs_rects = vs_rectdata
+                    .enter()
+                      .append('g')
+                        .attr('class', function(d) { return d.classname + ' vs-block'; });
+      vs_rects.on("mouseenter", onMouseIn)
+              .on("mouseleave", onMouseOut);
       vs_rects.append("svg:rect")
               .attr('class', 'vs-bounding-rect')
-              .attr("x", function(d) { return d.x - xoff; })
+              .attr("x", function(d) { console.log('x: ', d.x, 'cn: ', d.classname); return d.x - xoff; })
               .attr("y", function(d) { return d.y - yoff; })
               .attr("rx", function(d) { return d.h*0.04; })
               .attr("ry", function(d) { return d.h*0.04; })
@@ -579,7 +527,7 @@ window.onload = function() {
               .attr("width", function(d) { return (d.w + wgain -3*halo)/2 - 2; })
               .attr("height", function(d) { return d.h + hgain - 2*halo - 2; })
               .attr("xlink:href",function(d) { return d.img_left; })
-              .attr('class', 'vs-img-left');
+              .attr('class', 'vs-img-left')
       vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x - xoff + halo; })
               .attr("y", function(d) { return d.y - yoff + halo; })
@@ -702,6 +650,8 @@ window.onload = function() {
               .attr('class', 'vs-close-x2')
               .on("click", onCloseBlock);
 
+      //vs_rectdata.exit().remove();
+
 
       /*vs_rects.append("svg:rect")
               .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim; })
@@ -733,8 +683,8 @@ window.onload = function() {
   }
   function startAll() {
       var iid = Math.floor(Math.random()*240);
-      vs_data = [
-            //"Hello", "world", "normally", "you", "want", "more", "words",
+      inputData = [
+            "Hello", "world", "normally", "you", "want", "more", "words",
             "Hello", "world", "normally", "you", "want", "more", "words",
             "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
             "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
@@ -747,12 +697,16 @@ window.onload = function() {
                     classname: stringGen(8)};
           }).sort(function(a, b) { return b.dim - a.dim; });
       d3cloud.setSize([svg_width, svg_height]);
-      for(var i = 0; i < vs_data.length; ++i) {
-          if(d3cloud.addBlock(vs_data[i], 3) == false) break;
+
+
+      for(var i = 0; i < inputData.length; ++i) {
+          var d = inputData[i];
+          if(d3cloud.addBlock(d, 3) == false) break;
+          inputData.splice(i,1);
       }
       d3cloud.runCompaction();
-      draw(d3cloud.getData());
-
+      setupRendering();
+      updateRendering(d3cloud.getData());
       //d3cloud.setData(vs_data);
       //d3cloud.size([svg_width, svg_height])
           //.vs_bins(vs_data)

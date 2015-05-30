@@ -8,13 +8,13 @@
         var block_halo = [15, 15];
         var spiral = archimedeanSpiral;
         //var vs_bins = [];
-        var timeInterval = Infinity;
-        var event = d3.dispatch("end");
-        var timer = null;
+        //var timeInterval = Infinity;
+        //var event = d3.dispatch("end");
+        //var timer = null;
         var data = [];
         var placement_board = [];
         var placement_bounds = null;
-        var placement_tags = [];
+        //var placement_tags = [];
         var cloud = {};
 
         cloud.start = function() {
@@ -97,14 +97,10 @@
             function geth(d) { return d.h; }
             function setx(d, x) { return d.x = x; }
             function sety(d, y) { return d.y = y; }
-            cloud.randomBla(gety, geth, getx, getw, sety);
             cloud.randomBla(getx, getw, gety, geth, setx);
             cloud.randomBla(gety, geth, getx, getw, sety);
             cloud.randomBla(getx, getw, gety, geth, setx);
-        }
-
-        cloud.randomFoo = function() {
-            //data.splice(0,1);
+            cloud.randomBla(gety, geth, getx, getw, sety);
         }
 
         cloud.randomBla = function(fcoorda, fsizea, fcoordb, fsizeb, fsetcoorda) {
@@ -213,7 +209,6 @@
                 d.x = (size[0]>>1) + (Math.random() *20);
                 d.y = (size[1]>>1) + (Math.random() *20);
                 if(place(placement_board, placement_bounds, d)) {
-                    placement_tags.push(d);
                     if (placement_bounds) {
                         cloudBounds(placement_bounds, d);
                     } else {
@@ -225,6 +220,33 @@
                     data.push(d);
                     //cloud.runCompaction();
                     return true;
+                }
+            } 
+            return false;
+        }
+        cloud.rePlace = function(max_tries) {
+            placement_board = [];
+            placement_bounds = null;
+            for(var i = 0; i < data.length; ++i) {
+                var d = data[i];
+                console.log('replacing: ', d.classname);  
+                d.w = d.dim;
+                d.h = d.dim*0.5;
+                for(var tries = 0; tries < max_tries; ++tries) {
+                    d.x = (size[0]>>1) + (Math.random() *20);
+                    d.y = (size[1]>>1) + (Math.random() *20);
+                    if(place(placement_board, placement_bounds, d)) {
+                        if (placement_bounds) {
+                            cloudBounds(placement_bounds, d);
+                        } else {
+                            placement_bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
+                        }
+                        // Temporary hack
+                        d.x -= size[0] >> 1;
+                        d.y -= size[1] >> 1;
+                        //cloud.runCompaction();
+                        break;
+                    }
                 }
             } 
             return false;
@@ -304,11 +326,12 @@
               if (!bounds || !cloudCollide(d, board, max_width)) {
                   if (!bounds || !collideRects(d, bounds)) {
                       board.push({"x":d.x,"y":d.y,"w":d.w,"h":d.h});
+                      console.log('okr: ',d.classname,', ',d.w,', ',d.h);
                       return true;
                   }
               }
             }
-            console.log('couldnt fit ', d.classname);
+            console.log('flr: ',d.classname,', ',d.w,', ',d.h);
             return false;
         }
 
@@ -433,30 +456,10 @@
         return a;
     }
 
-    var cw = 1 << 11 >> 5;
-    var ch = 1 << 11;
-    var canvas;
-    var ratio = 1;
-
-    if (typeof document !== "undefined") {
-        canvas = document.createElement("canvas");
-        canvas.width = 1;
-        canvas.height = 1;
-        ratio = Math.sqrt(canvas.getContext("2d").getImageData(0, 0, 1, 1).data.length >> 2);
-        canvas.width = (cw << 5) / ratio;
-        canvas.height = ch / ratio;
-    } else {
-        // Attempt to use node-canvas.
-        canvas = new Canvas(cw << 5, ch);
-    }
-
-    var c = canvas.getContext("2d");
     var spirals = {
             archimedean: archimedeanSpiral,
             rectangular: rectangularSpiral
         };
-    c.fillStyle = c.strokeStyle = "red";
-    c.textAlign = "center";
 
     if (typeof module === "object" && module.exports) module.exports = cloud;
     else (d3.layout || (d3.layout = {})).cloud = cloud;
