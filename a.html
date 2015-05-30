@@ -214,43 +214,21 @@ window.onload = function() {
   }
 
   function onCloseBlock(d) {
-      console.log('close: ', d.classname);
-      var i = d3.selectAll('.' + d.classname).remove();
       d3cloud.removeData(d);
 
       d3cloud.rePlace(3);
       d3cloud.runCompaction();
-
-
-      //vs_rectdata = maing.selectAll('.vs-block').data(vs_data).exit().remove();
-      //vs_rectdata = rndMain.selectAll('.vs-block').data([]).exit().remove();
-      //d3cloud.setData([]);
-      //updateRendering(inputData);
-      //updateRendering(d3cloud.getData());
-      //d3cloud.reshape();
-      //var data = d3cloud.getData();
-      //console.log('d3data: ', data.length);
-
       
-      /*var newData = [];
       for(var i = 0; i < inputData.length; ++i) {
           var d = inputData[i];
           if(d3cloud.addBlock(d, 3) == false) break;
           inputData.splice(i,1);
-          newData.push(d);
-      }*/
-      if(inputData.length) {
-          var d = inputData[0];
-          if(d3cloud.addBlock(d, 3)) {
-              updateRendering([d]);
-              inputData.splice(0,1);
-              console.log('added successfully');
-          }
       }
 
       d3cloud.runCompaction();
       var data = d3cloud.getData();
-      console.log('now -  data: ', data.length, ' input: ', inputData.length);
+      updateRendering(data);
+
       for(var i in data) {
           var d = data[i];
           var block = d3.select("."+d.classname)
@@ -499,17 +477,18 @@ window.onload = function() {
 
       //for(var a = 0; a < vsData.length; ++a) console.log('upd: ', vsData[a].classname);
 
-      vs_rectdata = rndMain.selectAll('.vs-block')
-                      .data(vsData);
+      var vs_rectdata = rndMain.selectAll('.vs-block')
+                      .data(vsData, function(d) { return d.classname; });
 
 
-      vs_rects = vs_rectdata
+      var blockG = vs_rectdata
                     .enter()
                       .append('g')
-                        .attr('class', function(d) { return d.classname + ' vs-block'; });
-      vs_rects.on("mouseenter", onMouseIn)
-              .on("mouseleave", onMouseOut);
-      vs_rects.append("svg:rect")
+                        .attr('class', function(d) { return d.classname + ' vs-block'; })
+                        .on("mouseenter", onMouseIn)
+                        .on("mouseleave", onMouseOut);
+
+      blockG.append("svg:rect")
               .attr('class', 'vs-bounding-rect')
               .attr("x", function(d) { console.log('x: ', d.x, 'cn: ', d.classname); return d.x - xoff; })
               .attr("y", function(d) { return d.y - yoff; })
@@ -521,14 +500,14 @@ window.onload = function() {
               .style("stroke-width", 3)
               //.style("filter", "url(#drop-shadow)")
               .attr("fill", "white");
-      vs_rects.append("svg:image")
+      blockG.append("svg:image")
               .attr("x", function(d) { return d.x - xoff + halo + 1; })
               .attr("y", function(d) { return d.y - yoff + halo + 1; })
               .attr("width", function(d) { return (d.w + wgain -3*halo)/2 - 2; })
               .attr("height", function(d) { return d.h + hgain - 2*halo - 2; })
               .attr("xlink:href",function(d) { return d.img_left; })
               .attr('class', 'vs-img-left')
-      vs_rects.append("svg:rect")
+      blockG.append("svg:rect")
               .attr("x", function(d) { return d.x - xoff + halo; })
               .attr("y", function(d) { return d.y - yoff + halo; })
               .attr("width", function(d) { return (d.w + wgain -3*halo)/2; })
@@ -541,14 +520,14 @@ window.onload = function() {
               .style("stroke-width", 2)
               .attr('class', 'vs-img-border-left');
 
-      vs_rects.append("svg:image")
+      blockG.append("svg:image")
               .attr("x", function(d) { return d.x - xoff + (d.w + wgain + halo)/2 + 1; })
               .attr("y", function(d) { return d.y - yoff + halo + 1; })
               .attr("width", function(d) { return (d.w + wgain -3*halo)/2 - 2; })
               .attr("height", function(d) { return d.h + hgain - 2*halo - 2; })
               .attr("xlink:href",function(d) { return d.img_right; })
               .attr('class', 'vs-img-right');
-      vs_rects.append("svg:rect")
+      blockG.append("svg:rect")
               .attr("x", function(d) { return d.x - xoff + (d.w + wgain + halo)/2; })
               .attr("y", function(d) { return d.y - yoff + halo; })
               .attr("width", function(d) { return (d.w + wgain -3*halo)/2; })
@@ -562,7 +541,7 @@ window.onload = function() {
 
 
 
-      vs_rects.append("svg:rect")
+      blockG.append("svg:rect")
               .attr("x", function(d) { return d.x + d.w*0.1 ; })
               .attr("y", function(d) { return d.y + d.h*0.7; })
               .attr("width", function(d) { 
@@ -580,7 +559,7 @@ window.onload = function() {
               .style("stroke-width", 2)
               .attr('class', 'vs-counter-rect-left');
 
-      vs_rects.append("svg:rect")
+      blockG.append("svg:rect")
               //.attr("x", function(d) { return d.x + rat_w_halo; })
               .attr("x", function(d) { 
                       return d.x + d.w*0.1 + d.counter_rect_left_width; 
@@ -600,7 +579,7 @@ window.onload = function() {
               .style("stroke-width", 2)
               .attr('class', 'vs-counter-rect-right');
 
-      vs_rects.append("text")
+      blockG.append("text")
               .attr("x", function(d) { return d.x + d.w*0.12; })
               .attr("y", function(d) { return d.y + d.h*0.87; })
               //.attr("fill", "white")
@@ -609,7 +588,7 @@ window.onload = function() {
               .text(function(d) { return d.rat_left.toString(); })
               .attr('class', 'vs-counter-text-left');
 
-      vs_rects.append("text")
+      blockG.append("text")
               //.attr("x", function(d) { return d.x + d.w*0.86 - d.rat_right.toString().length * (7*d.h/100); })
               .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+"px Nobile") - 2})
               .attr("y", function(d) { return d.y + d.h*0.87; })
@@ -619,7 +598,7 @@ window.onload = function() {
               .text(function(d) { return d.rat_right.toString(); })
               .attr('class', 'vs-counter-text-right');
 
-      vs_rects.append('circle')
+      blockG.append('circle')
               .attr("cx", function(d) { return d.x + d.w; })
               .attr("cy", function(d) { return d.y; })
               .attr("r", 14)
@@ -629,7 +608,7 @@ window.onload = function() {
               .style("opacity", 0)
               .attr('class', 'vs-close-circle')
               .on("click", onCloseBlock);
-      vs_rects.append("line")
+      blockG.append("line")
               .attr("x1", function(d) { return d.x + d.w - 5; })
               .attr("y1", function(d) { return d.y - 5; })
               .attr("x2", function(d) { return d.x + d.w + 5; })
@@ -639,7 +618,7 @@ window.onload = function() {
               .style("opacity", 0)
               .attr('class', 'vs-close-x1')
               .on("click", onCloseBlock);
-      vs_rects.append("line")
+      blockG.append("line")
               .attr("x1", function(d) { return d.x + d.w + 5; })
               .attr("y1", function(d) { return d.y - 5; })
               .attr("x2", function(d) { return d.x + d.w - 5; })
@@ -650,26 +629,7 @@ window.onload = function() {
               .attr('class', 'vs-close-x2')
               .on("click", onCloseBlock);
 
-      //vs_rectdata.exit().remove();
-
-
-      /*vs_rects.append("svg:rect")
-              .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim; })
-              .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim; })
-              .attr("width", function(d) { return d.rat_right.toString().length * char_dim; })
-              .attr("height", function(d) { return h_dim; })
-              //.attr("rx", function(d) { return d.h*0.04; })
-              //.attr("ry", function(d) { return d.h*0.04; })
-              .style("stroke", "black")
-              .style("stroke-width", 1)
-              .attr('class', 'vs-counter-right')
-              .attr("fill", "#CE173E");*/
-      /*vs_rects.append("text")
-              .attr("x", function(d) { return d.x + d.w - rat_w_halo - d.rat_right.toString().length * char_dim - 2; })
-              .attr("y", function(d) { return d.y + d.h - rat_h_halo - h_dim + 4; })
-              .attr("dy", 11+"px")
-              //.style("font-size",11+"px")
-              .text(function(d) { return d.rat_right.toString(); });*/
+      vs_rectdata.exit().remove();
 
   }
   function stringGen(len) {
