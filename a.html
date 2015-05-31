@@ -62,7 +62,7 @@ window.onload = function() {
   var ctx = canvas.getContext("2d");
 
   var  bla = document.getElementById("div_svg");
-  var  svg_height = window.innerHeight * 0.5;
+  var  svg_height = window.innerHeight * 0.6;
   var  svg_width = bla.clientWidth;
 
   var div_svg = d3.select("#div_svg");
@@ -216,15 +216,17 @@ window.onload = function() {
   function onCloseBlock(d) {
       d3cloud.removeData(d);
 
-      d3cloud.rePlace(3);
-      d3cloud.runCompaction();
+      //d3cloud.rePlace(3);
+      //d3cloud.runCompaction();
       
-      for(var i = 0; i < inputData.length; ++i) {
+      for(var i = 0; i < inputData.length; ) {
           var d = inputData[i];
           if(d3cloud.addBlock(d, 3) == false) break;
           inputData.splice(i,1);
       }
+      console.log('after place #2: ', inputData.length, 'placed: ', d3cloud.getData().length);
 
+      d3cloud.rePlace(3);
       d3cloud.runCompaction();
       var data = d3cloud.getData();
       updateRendering(data);
@@ -358,6 +360,7 @@ window.onload = function() {
           //.style("stroke", "green")
           .style("fill", "none")
           //.style("stroke-width", 2)
+          .on('click', function() {console.log('bla');})
           ;
 
       rndGradientLeft = svg.append("svg:defs")
@@ -658,12 +661,14 @@ window.onload = function() {
           }).sort(function(a, b) { return b.dim - a.dim; });
       d3cloud.setSize([svg_width, svg_height]);
 
+      console.log('total: ', inputData.length);
 
-      for(var i = 0; i < inputData.length; ++i) {
+      for(var i = 0; i < inputData.length;) {
           var d = inputData[i];
-          if(d3cloud.addBlock(d, 3) == false) break;
+          if(d3cloud.addBlock(d, 1) == false) break;
           inputData.splice(i,1);
       }
+      console.log('after place: ', inputData.length, 'placed: ', d3cloud.getData().length);
       d3cloud.runCompaction();
       setupRendering();
       updateRendering(d3cloud.getData());
