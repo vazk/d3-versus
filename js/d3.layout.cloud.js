@@ -27,11 +27,11 @@
             return cloud;
         }
 
-        cloud.reshape = function() {
-            cloud.runCompaction();
-            event.end();
-            return cloud;
-        }
+        //cloud.reshape = function() {
+        //    cloud.runCompaction();
+        //    event.end();
+        //    return cloud;
+        //}
         
         cloud.computeCenter = function() {
             var total_weight = 0;
@@ -101,12 +101,20 @@
             cloud.randomBla(gety, geth, getx, getw, sety);
             cloud.randomBla(getx, getw, gety, geth, setx);
             cloud.randomBla(gety, geth, getx, getw, sety);
+            var c = cloud.computeCenter();
+            console.log('CENTER: ', c.x, ', ', c.y);
+            var sc = {'x': size[0] >> 1, 'y': size[0] >> 1};
+            for(var i = 0; i < data.length; ++i) {
+                var dd = data[i];
+                dd.x -= c.x;
+                dd.y -= c.y;
+            }
         }
 
         cloud.randomBla = function(fcoorda, fsizea, fcoordb, fsizeb, fsetcoorda) {
             var g = d3.select(".vs-main-g");
 
-            function joinCenters(da, db) {
+            /*function joinCenters(da, db) {
                 g.append("line")
                           .attr("x1", da.x + da.w/2)
                           .attr("y1", da.y + da.h/2)
@@ -114,7 +122,7 @@
                           .attr("y2", db.y + db.h/2)
                           .attr("stroke-width", 4)
                           .attr("stroke", "red");              
-            }
+            }*/
 
             var n = data.length;
             var i = -1;
@@ -193,7 +201,7 @@
                         target = Math.min(target, fcoorda(E[i].t) - halo); 
                     }
                     if(target > fcoorda(d) + fsizea(d)) {
-                        console.log('successful R shift: ', fcoorda(d)+fsizea(d), ' to ', target);
+                        //console.log('successful R shift: ', fcoorda(d)+fsizea(d), ' to ', target);
                         fsetcoorda(d, target - fsizea(d));
                     }
 
@@ -206,8 +214,8 @@
             d.h = d.dim*0.5;
             d.padding = 5;
             for(var tries = 0; tries < max_tries; ++tries) {
-                d.x = (size[0]>>1) + (Math.random() *20);
-                d.y = (size[1]>>1) + (Math.random() *20);
+                d.x = (size[0]>>1);// + (Math.random() *50);
+                d.y = (size[1]>>1) + (Math.random() *150);
                 if(place(placement_board, placement_bounds, d)) {
                     if (placement_bounds) {
                         cloudBounds(placement_bounds, d);
@@ -326,12 +334,10 @@
               if (!bounds || !cloudCollide(d, board, max_width)) {
                   if (!bounds || !collideRects(d, bounds)) {
                       board.push({"x":d.x,"y":d.y,"w":d.w,"h":d.h});
-                      console.log('okr: ',d.classname,', ',d.w,', ',d.h);
                       return true;
                   }
               }
             }
-            console.log('flr: ',d.classname,', ',d.w,', ',d.h);
             return false;
         }
 
