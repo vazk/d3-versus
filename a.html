@@ -15,7 +15,9 @@
 <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>-->
 <script src="lib/d3/d3.js"></script>
-<script src="js/d3.layout.cloud.js"></script>
+<script src="js/VS.js"></script>
+<script src="js/VS.menu.js"></script>
+<script src="js/VS.layout.cloud.js"></script>
 <script src="js/imgurls.js"></script>
 
 
@@ -30,13 +32,14 @@
           
           <br>-->
           <div id="div_svg"></div>
+          <div id="div_menu_svg"></div>
 
-          <form class="col-lg-12">
+          <!--<form class="col-lg-12">
             <div class="input-group input-group-lg col-sm-offset-3 col-sm-6 col-xs-offset-1 col-xs-10">
               <input type="text" class="center-block form-control input-lg" title="Search versus." placeholder="search versus...">
               <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="button">go</button></span>
             </div>
-          </form>
+          </form>-->
         </div>
         
       </div> <!-- /row -->
@@ -55,36 +58,30 @@
 
 
 <script>
+
+
 window.onload = function() {
   var fill = d3.scale.category20();
 
-  var canvas = document.createElement('canvas');
-  var ctx = canvas.getContext("2d");
+  VS.SVGHeight = window.innerHeight * 0.6;
+  VS.SVGWidth = document.getElementById("div_svg").clientWidth;
+  VS.SVGMenuHeight = 70;
 
-  var  bla = document.getElementById("div_svg");
-  var  svg_height = window.innerHeight * 0.6;
-  var  svg_width = bla.clientWidth;
+  var divCloudSVG = d3.select("#div_svg");
+  var SVGCloud;
 
-  var div_svg = d3.select("#div_svg");
-  var svg = div_svg.append("svg");
-
-  var d3cloud = d3.layout.cloud();
+  var vsCloud = VS.layout.cloud();
+  var vsMenu = VS.menu();
 
   var inputData = [];
   var vs_rectdata = [];
   var vs_rects = [];
-
-  svg.style("background","white");
-
+  var layTransitionDuration = 200;
 
   function computeFontSize(w, textLength) { 
       return Math.min(2 * w, (2 * w - 8) / textLength * 24) + "px";
   }
 
-  function computeTextWidth(text, font) {
-      ctx.font = font;        
-      return ctx.measureText(text).width;
-  }
 
   function onMouseIn(d) {
       console.log('m: ', d.classname);
@@ -94,8 +91,8 @@ window.onload = function() {
       var yoff = hgain/2;
       var halo = 0;
 
-      var size = d3cloud.getSize();
-      var pad = d3cloud.getBlockHalo();
+      var size = vsCloud.getSize();
+      var pad = vsCloud.getBlockHalo();
       size = [(size[0]-30)>>1, (size[1]-30)>>1];
 
       var x_rect = d.x - xoff;
@@ -113,7 +110,7 @@ window.onload = function() {
       var i = d3.select(this);
       i.select(".vs-bounding-rect")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_rect-3)
             .attr('y', y_rect-3)
             .attr('width', w_rect+6)
@@ -148,14 +145,14 @@ window.onload = function() {
 
       i.select(".vs-img-left")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_img_l + 1)
             .attr('y', y_img + 1)
             .attr('width', w_img - 2)
             .attr('height', h_img - 2);
       i.select(".vs-img-border-left")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_img_l)
             .attr('y', y_img)
             .attr('width', w_img)
@@ -163,14 +160,14 @@ window.onload = function() {
 
       i.select(".vs-img-right")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_img_r + 2)
             .attr('y', y_img + 2)
             .attr('width', w_img - 2)
             .attr('height', h_img - 2);
       i.select(".vs-img-border-right")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_img_r)
             .attr('y', y_img)
             .attr('width', w_img)
@@ -178,7 +175,7 @@ window.onload = function() {
 
       i.select(".vs-counter-rect-left")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr("x", function(d) { return x_rect + w_rect*0.1 ; })
             .attr("y", function(d) { return y_rect + h_rect*0.7; })
             .attr("width", function(d) { return Math.max(15,(d.rat_left/(d.rat_right + d.rat_left))*w_rect*0.8 - 1); })
@@ -186,22 +183,22 @@ window.onload = function() {
 
       i.select(".vs-counter-rect-right")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr("x", function(d) { return x_rect + w_rect*0.1 + Math.max(15,(d.rat_left/(d.rat_right+d.rat_left))*w_rect*0.8) + 1; })
             .attr("y", function(d) { return y_rect + h_rect*0.70; })
             .attr("width", function(d) { return Math.max(15,(d.rat_right/(d.rat_right + d.rat_left))*w_rect*0.8); })
             .attr("height", function(d) { return h_rect*0.25; });
    
       i.select(".vs-counter-text-left")
-            .transition().duration(150)
+            .transition().duration(layTransitionDuration)
             .attr("x", function(d) { return x_rect + w_rect*0.12; })
             .attr("y", function(d) { return y_rect + h_rect*0.87; })
             .style("font-size", function(d) { return 16+"px";});
 
       i.select(".vs-counter-text-right")
-            .transition().duration(150)
+            .transition().duration(layTransitionDuration)
             //.attr("x", function(d) { return x_rect + w_rect*0.86 - d.rat_right.toString().length * (7*h_rect/100); })
-            .attr("x", function(d) { return x_rect + w_rect*0.9 - computeTextWidth(d.rat_right.toString(), '16px Nobile') - 1; })
+            .attr("x", function(d) { return x_rect + w_rect*0.9 - VS.computeTextWidth(d.rat_right.toString(), '16px Nobile') - 1; })
             .attr("y", function(d) { return y_rect + h_rect*0.87; })
             .style("font-size", function(d) { return 16+"px";});
       
@@ -214,21 +211,21 @@ window.onload = function() {
   }
 
   function onCloseBlock(d) {
-      d3cloud.removeData(d);
+      vsCloud.removeData(d);
 
-      //d3cloud.rePlace(3);
-      //d3cloud.runCompaction();
+      //vsCloud.rePlace(3);
+      //vsCloud.runCompaction();
       
       for(var i = 0; i < inputData.length; ) {
           var d = inputData[i];
-          if(d3cloud.addBlock(d, 3) == false) break;
+          if(vsCloud.addBlock(d, 3) == false) break;
           inputData.splice(i,1);
       }
-      console.log('after place #2: ', inputData.length, 'placed: ', d3cloud.getData().length);
+      console.log('after place #2: ', inputData.length, 'placed: ', vsCloud.getData().length);
 
-      d3cloud.rePlace(3);
-      d3cloud.runCompaction();
-      var data = d3cloud.getData();
+      vsCloud.rePlace(3);
+      vsCloud.runCompaction();
+      var data = vsCloud.getData();
       updateRendering(data);
 
       for(var i in data) {
@@ -253,7 +250,7 @@ window.onload = function() {
       
       i.select(".vs-bounding-rect")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_rect)
             .attr('y', y_rect)
             .attr('width', w_rect)
@@ -270,28 +267,28 @@ window.onload = function() {
 
       i.select(".vs-img-left")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_img_l + 1)
             .attr('y', y_img + 1)
             .attr('width', w_img - 2)
             .attr('height', h_img - 2);
       i.select(".vs-img-border-left")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_img_l)
             .attr('y', y_img)
             .attr('width', w_img)
             .attr('height', h_img);
       i.select(".vs-img-right")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_img_r + 1)
             .attr('y', y_img + 1)
             .attr('width', w_img - 2)
             .attr('height', h_img - 2);
       i.select(".vs-img-border-right")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr('x', x_img_r)
             .attr('y', y_img)
             .attr('width', w_img)
@@ -299,7 +296,7 @@ window.onload = function() {
 
       i.select(".vs-counter-rect-left")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr("x", function(d) { return d.x + d.w*0.1 ; })
             .attr("y", function(d) { return d.y + d.h*0.7; })
             .attr("width", function(d) { return d.counter_rect_left_width; })
@@ -307,23 +304,23 @@ window.onload = function() {
 
       i.select(".vs-counter-rect-right")
             .transition()
-            .duration(150)
+            .duration(layTransitionDuration)
             .attr("x", function(d) { return d.x + d.w*0.1 + d.counter_rect_left_width; })
             .attr("y", function(d) { return d.y + d.h*0.70; })
             .attr("width", function(d) { return d.w*0.8 - d.counter_rect_left_width; })
             .attr("height", function(d) { return d.h*0.25; })
 
       i.select(".vs-counter-text-left")
-            .transition().duration(150)
+            .transition().duration(layTransitionDuration)
             .attr("x", function(d) { return d.x + d.w*0.12; })
             .attr("y", function(d) { return d.y + d.h*0.87; })
             .style("font-size", function(d) { return d.h*0.16 + 'px';});
             //.style("font-size", function(d) { return (d.h/100)+"em";});
 
       i.select(".vs-counter-text-right")
-            .transition().duration(150)
+            .transition().duration(layTransitionDuration)
             //.attr("x", function(d) { return d.x + d.w*0.86 - d.rat_right.toString().length * (7*d.h/100); }
-            .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
+            .attr("x", function(d) { return d.x + d.w*0.9 - VS.computeTextWidth(d.rat_right.toString(), d.h*0.17+'px Nobile') - 2})
             .attr("y", function(d) { return d.y + d.h*0.87; })
             .style("font-size", function(d) { return d.h*0.16 + 'px';});
 
@@ -345,25 +342,29 @@ window.onload = function() {
             .style("opacity", 0);
   }
 
-  var rndBorderPath;
-  var rndGradientLeft;
-  var rndGradiendRight;
-  var rndFfilter;
-  var rndMain;
+  var layBorderPath;
+  var layGradientLeft;
+  var layGradiendRight;
+  var layFfilter;
+  var layMain;
 
   function setupRendering() {
-      rndBorderPath = svg.append("rect")
+
+      SVGCloud = divCloudSVG.append("svg")
+                    .style("background","white");
+  
+      layBorderPath = SVGCloud.append("rect")
           .attr("x", 0)
           .attr("y", 0)
-          .attr("height", svg_height)
-          .attr("width", svg_width)
+          .attr("height", VS.SVGHeight)
+          .attr("width", VS.SVGWidth)
           //.style("stroke", "green")
           .style("fill", "none")
           //.style("stroke-width", 2)
           .on('click', function() {console.log('bla');})
           ;
 
-      rndGradientLeft = svg.append("svg:defs")
+      layGradientLeft = SVGCloud.append("svg:defs")
           .append("svg:linearGradient")
           .attr("id", "gradient_left")
           .attr("x1", "0%")
@@ -372,24 +373,24 @@ window.onload = function() {
           .attr("y2", "0%")
           .attr("spreadMethod", "pad");
 
-      rndGradientLeft.append("svg:stop")
+      layGradientLeft.append("svg:stop")
           .attr("offset", "0%")
           .attr("stop-color", "#25BADF")
           .attr("stop-opacity", 1);
 
 
-      rndGradientLeft.append("svg:stop")
+      layGradientLeft.append("svg:stop")
           .attr("offset", "50%")
           .attr("stop-color", "#1BCB9D")//27 203 157
           .attr("stop-opacity", 1);
 
-      rndGradientLeft.append("svg:stop")
+      layGradientLeft.append("svg:stop")
           .attr("offset", "100%")
           .attr("stop-color", "#25BADF")
           .attr("stop-opacity", 1);
 
 
-      rndGradientRight = svg.append("svg:defs")
+      layGradientRight = SVGCloud.append("svg:defs")
           .append("svg:linearGradient")
           .attr("id", "gradient_right")
           .attr("x1", "0%")
@@ -399,41 +400,41 @@ window.onload = function() {
           .attr("spreadMethod", "pad");
 
 
-      rndGradientRight.append("svg:stop")
+      layGradientRight.append("svg:stop")
           .attr("offset", "0%")
           .attr("stop-color", "#F98829")
           .attr("stop-opacity", 1);
 
-      rndGradientRight.append("svg:stop")
+      layGradientRight.append("svg:stop")
           .attr("offset", "50%")
           .attr("stop-color", "#F8750B")//248 117 11
           .attr("stop-opacity", 1);
 
-      rndGradientRight.append("svg:stop")
+      layGradientRight.append("svg:stop")
           .attr("offset", "100%")
           .attr("stop-color", "#CE173E")
           .attr("stop-opacity", 1);
 
       // filters go in defs element
-      var defs = svg.append("defs");
+      var defs = SVGCloud.append("defs");
        
       // create filter with id #drop-shadow
       // height=130% so that the shadow is not clipped
-      rndFilter = defs.append("filter")
+      layFilter = defs.append("filter")
           .attr("id", "drop-shadow")
           .attr("height", "130%");
        
       // SourceAlpha refers to opacity of graphic that this filter will be applied to
       // convolve that with a Gaussian with standard deviation 3 and store result
       // in blur
-      rndFilter.append("feGaussianBlur")
+      layFilter.append("feGaussianBlur")
           .attr("in", "SourceAlpha")
           .attr("stdDeviation", 5)
           .attr("result", "blur");
        
       // translate output of Gaussian blur to the right and downwards with 2px
       // store result in offsetBlur
-      rndFilter.append("feOffset")
+      layFilter.append("feOffset")
           .attr("in", "blur")
           .attr("dx", 0)
           .attr("dy", 0)
@@ -441,7 +442,7 @@ window.onload = function() {
        
       // overlay original SourceGraphic over translated blurred opacity by using
       // feMerge filter. Order of specifying inputs is important!
-      var feMerge = rndFilter.append("feMerge");
+      var feMerge = layFilter.append("feMerge");
        
       feMerge.append("feMergeNode")
           .attr("in", "offsetBlur")
@@ -449,10 +450,10 @@ window.onload = function() {
           .attr("in", "SourceGraphic");
 
 
-      rndMain = svg.attr('width',  svg_width)
-                   .attr('height', svg_height)
+      layMain = SVGCloud.attr('width',  VS.SVGWidth)
+                   .attr('height', VS.SVGHeight)
                    .append('g')
-                      .attr('transform', 'translate('+svg_width/2+','+svg_height/2+')')
+                      .attr('transform', 'translate('+VS.SVGWidth/2+','+VS.SVGHeight/2+')')
                       .attr('class', 'vs-main-g');
 
   }
@@ -480,7 +481,7 @@ window.onload = function() {
 
       //for(var a = 0; a < vsData.length; ++a) console.log('upd: ', vsData[a].classname);
 
-      var vs_rectdata = rndMain.selectAll('.vs-block')
+      var vs_rectdata = layMain.selectAll('.vs-block')
                       .data(vsData, function(d) { return d.classname; });
 
 
@@ -493,7 +494,7 @@ window.onload = function() {
 
       blockG.append("svg:rect")
               .attr('class', 'vs-bounding-rect')
-              .attr("x", function(d) { console.log('x: ', d.x, 'cn: ', d.classname); return d.x - xoff; })
+              .attr("x", function(d) { return d.x - xoff; })
               .attr("y", function(d) { return d.y - yoff; })
               .attr("rx", function(d) { return d.h*0.04; })
               .attr("ry", function(d) { return d.h*0.04; })
@@ -585,17 +586,14 @@ window.onload = function() {
       blockG.append("text")
               .attr("x", function(d) { return d.x + d.w*0.12; })
               .attr("y", function(d) { return d.y + d.h*0.87; })
-              //.attr("fill", "white")
               .style("font-family","Nobile")
               .style("font-size", function(d) { return d.h*0.16 + 'px';})
               .text(function(d) { return d.rat_left.toString(); })
               .attr('class', 'vs-counter-text-left');
 
       blockG.append("text")
-              //.attr("x", function(d) { return d.x + d.w*0.86 - d.rat_right.toString().length * (7*d.h/100); })
-              .attr("x", function(d) { return d.x + d.w*0.9 - computeTextWidth(d.rat_right.toString(), d.h*0.17+"px Nobile") - 2})
+              .attr("x", function(d) { return d.x + d.w*0.9 - VS.computeTextWidth(d.rat_right.toString(), d.h*0.17+"px Nobile") - 2})
               .attr("y", function(d) { return d.y + d.h*0.87; })
-              //.attr("fill", "white")
               .style("font-family","Nobile")
               .style("font-size", function(d) { return d.h*0.16 + 'px';})
               .text(function(d) { return d.rat_right.toString(); })
@@ -641,9 +639,9 @@ window.onload = function() {
       for( var i=0; i < len; i++ ) {
           text += charset.charAt(Math.floor(Math.random() * charset.length));
       }
-      console.log("str: ", text);
       return text;
   }
+
   function startAll() {
       var iid = Math.floor(Math.random()*240);
       inputData = [
@@ -659,21 +657,22 @@ window.onload = function() {
                     rat_right: Math.floor(Math.random()*200),
                     classname: stringGen(8)};
           }).sort(function(a, b) { return b.dim - a.dim; });
-      d3cloud.setSize([svg_width, svg_height]);
+      vsCloud.setSize([VS.SVGWidth, VS.SVGHeight]);
 
       console.log('total: ', inputData.length);
 
       for(var i = 0; i < inputData.length;) {
           var d = inputData[i];
-          if(d3cloud.addBlock(d, 1) == false) break;
+          if(vsCloud.addBlock(d, 1) == false) break;
           inputData.splice(i,1);
       }
-      console.log('after place: ', inputData.length, 'placed: ', d3cloud.getData().length);
-      d3cloud.runCompaction();
+      console.log('after place: ', inputData.length, 'placed: ', vsCloud.getData().length);
+      vsCloud.runCompaction();
       setupRendering();
-      updateRendering(d3cloud.getData());
-      //d3cloud.setData(vs_data);
-      //d3cloud.size([svg_width, svg_height])
+      vsMenu.setupMenuRendering();
+      updateRendering(vsCloud.getData());
+      //vsCloud.setData(vs_data);
+      //vsCloud.size([VS.SVGWidth, VS.SVGHeight])
           //.vs_bins(vs_data)
           //.padding(5)
           //.on("end", draw)

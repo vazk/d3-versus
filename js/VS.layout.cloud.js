@@ -26,12 +26,6 @@
 
             return cloud;
         }
-
-        //cloud.reshape = function() {
-        //    cloud.runCompaction();
-        //    event.end();
-        //    return cloud;
-        //}
         
         cloud.computeCenter = function() {
             var total_weight = 0;
@@ -46,7 +40,6 @@
             }
             x /= total_weight;
             y /= total_weight;
-            console.log("center: ", x, ", ", y);
             return {'x': x, 'y': y};
         }
 
@@ -102,7 +95,6 @@
             cloud.randomBla(getx, getw, gety, geth, setx);
             cloud.randomBla(gety, geth, getx, getw, sety);
             var c = cloud.computeCenter();
-            console.log('CENTER: ', c.x, ', ', c.y);
             var sc = {'x': size[0] >> 1, 'y': size[0] >> 1};
             for(var i = 0; i < data.length; ++i) {
                 var dd = data[i];
@@ -214,8 +206,8 @@
             d.h = d.dim*0.5;
             d.padding = 5;
             for(var tries = 0; tries < max_tries; ++tries) {
-                d.x = (size[0]>>1);// + (Math.random() *50);
-                d.y = (size[1]>>1) + (Math.random() *150);
+                d.x = (size[0]>>1) + (Math.random() *20);
+                d.y = (size[1]>>1) + (Math.random() *20);
                 if(place(placement_board, placement_bounds, d)) {
                     if (placement_bounds) {
                         cloudBounds(placement_bounds, d);
@@ -241,8 +233,8 @@
                 d.w = d.dim;
                 d.h = d.dim*0.5;
                 for(var tries = 0; tries < max_tries; ++tries) {
-                    d.x = (size[0]>>1) + (Math.random() *20);
-                    d.y = (size[1]>>1) + (Math.random() *20);
+                    d.x = (size[0]>>1);
+                    d.y = (size[1]>>1);
                     if(place(placement_board, placement_bounds, d)) {
                         if (placement_bounds) {
                             cloudBounds(placement_bounds, d);
@@ -340,19 +332,6 @@
             }
             return false;
         }
-
-
-        /*cloud.vs_bins = function(x) {
-            if (!arguments.length) return vs_bins;
-            vs_bins = x;
-            data = vs_bins.map(function(d, i) {
-                    d.text = text.call(this, d, i);
-                    d.padding = padding.call(this, d, i);
-                    d.h = d.dim*0.5;
-                    return d;
-                }).sort(function(a, b) { return b.dim - a.dim; });
-            return cloud;
-        };*/
 
         cloud.size = function(x) {
             if (!arguments.length) return size;
@@ -468,7 +447,7 @@
         };
 
     if (typeof module === "object" && module.exports) module.exports = cloud;
-    else (d3.layout || (d3.layout = {})).cloud = cloud;
+    else (VS.layout || (VS.layout = {})).cloud = cloud;
 })();
 
 
