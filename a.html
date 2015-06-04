@@ -117,7 +117,7 @@ window.onload = function() {
             .attr('height', h_rect+6)
             .style("stroke", "white")
             .style("stroke-width", 8)
-            .style("filter", "url(#drop-shadow)")
+            .style("filter", "url(#drop-shadow-block)")
             .each("end", function(){
                   i.select(".vs-close-circle")
                       .attr("cx", x_rect + w_rect - 5)
@@ -418,10 +418,10 @@ window.onload = function() {
       // filters go in defs element
       var defs = SVGCloud.append("defs");
        
-      // create filter with id #drop-shadow
+      // create filter with id #drop-shadow-block
       // height=130% so that the shadow is not clipped
       layFilter = defs.append("filter")
-          .attr("id", "drop-shadow")
+          .attr("id", "drop-shadow-block")
           .attr("height", "130%");
        
       // SourceAlpha refers to opacity of graphic that this filter will be applied to
@@ -502,7 +502,7 @@ window.onload = function() {
               .attr("height", function(d) { return d.h + hgain; })
               .style("stroke", "black")
               .style("stroke-width", 3)
-              //.style("filter", "url(#drop-shadow)")
+              //.style("filter", "url(#drop-shadow-block)")
               .attr("fill", "white");
       blockG.append("svg:image")
               .attr("x", function(d) { return d.x - xoff + halo + 1; })
@@ -558,7 +558,7 @@ window.onload = function() {
               //.style("stroke", "white")
               //.style("stroke-width", 1)
               .style("fill", "url(#gradient_left)")
-              //.style("filter", "url(#drop-shadow)")
+              //.style("filter", "url(#drop-shadow-block)")
               .style("stroke", "white")
               .style("stroke-width", 2)
               .attr('class', 'vs-counter-rect-left');
@@ -578,7 +578,7 @@ window.onload = function() {
               //.style("stroke", "white")
               //.style("stroke-width", 1)
               .style("fill", "url(#gradient_right)")
-              //.style("filter", "url(#drop-shadow)")
+              //.style("filter", "url(#drop-shadow-block)")
               .style("stroke", "white")
               .style("stroke-width", 2)
               .attr('class', 'vs-counter-rect-right');

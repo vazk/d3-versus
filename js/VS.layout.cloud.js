@@ -7,10 +7,6 @@
         var padding = cloudPadding;
         var block_halo = [15, 15];
         var spiral = archimedeanSpiral;
-        //var vs_bins = [];
-        //var timeInterval = Infinity;
-        //var event = d3.dispatch("end");
-        //var timer = null;
         var data = [];
         var placement_board = [];
         var placement_bounds = null;
@@ -251,50 +247,6 @@
             } 
             return false;
         }
-        /*
-        cloud.step = function() {
-            var start = +new Date;
-            var d;
-            var board = [];
-            var bounds = null;
-            var tags = [];
-            //var n = vs_bins.length;
-            var n = data.length;
-            var i = -1;
-            while (+new Date - start < timeInterval && ++i < n && timer) {
-                d = data[i];
-                d.x = (size[0]>>1) + (Math.random() *20);
-                d.y = (size[1]>>1) + (Math.random() *20);
-                //console.log("STEP: ", d.text, ", ", d.x, ", ", d.y,", ",d.w,", ",d.h);
-                if(place(board, bounds, d)) {
-                    tags.push(d);
-                    if (bounds) cloudBounds(bounds, d);
-                    else bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
-                    // Temporary hack
-                    d.x -= size[0] >> 1;
-                    d.y -= size[1] >> 1;
-                }
-            }
-            if (i >= n) {
-                cloud.stop();
-                cloud.runCompaction();
-                event.end(tags, bounds);
-            }
-        }
-
-        cloud.stop = function() {
-            if (timer) {
-              clearInterval(timer);
-              timer = null;
-            }
-            return cloud;
-        };
-
-        cloud.timeInterval = function(x) {
-            if (!arguments.length) return timeInterval;
-            timeInterval = x == null ? Infinity : x;
-            return cloud;
-        };*/
 
         function place(board,  bounds, d) {
             var perimeter = [{x: block_halo[0], y: block_halo[1]}, 

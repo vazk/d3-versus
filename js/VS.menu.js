@@ -5,39 +5,30 @@
         var SVGMenu;
  
         var items = [];
-        var currentItem = 0;
+        var mnuSelectedItem = 0;
+        var mnuHoverItem = -1;
 
         var mnuItemFontSize = 20;
-        var mnuSelItemFontSize = 40;
+        var mnuSelItemFontSize = 50;
+        var mnuHovItemFontSize = 23 ;
         var mnuSeparation = 45;
+        var mnuBorderPath;
 
-        function onMenuMouseIn() {/*
-            var i = d3.select(this);
-            i.select('text')
-                .transition()
-                .duration(150)
-                .attr('x', 0)
-                .attr('y', 0)
-                .style('font-family','Nobile')
-                .style('font-size', '30px');*/
+
+        function onMenuMouseIn() {
+            mnuHoverItem = this.attributes.item_index.value;
+            menu.updateMenu();
         }
 
-        function onMenuMouseOut() {/*
-            var i = d3.select(this);
-            i.select('text')
-                .transition()
-                .duration(150)
-                .attr('x', 0)
-                .attr('y', 0)
-                .style('font-family', 'Nobile')
-                .style('font-size', '20px');*/
+        function onMenuMouseOut() {
+            mnuHoverItem = -1;
+            menu.updateMenu();
         }
 
         menu.onMenuMouseClick = function() {
             var i = d3.select(this);
-            currentItem = this.attributes.item_index.value;
+            mnuSelectedItem = this.attributes.item_index.value;
             var r = menu.updateMenu();
-            console.log('offset: ', r);
             mnuMenuMain.transition()
                 .duration(350)
                 .attr('transform', 'translate('+(VS.SVGWidth/2-r.offset)+','
@@ -49,21 +40,31 @@
             var offset = 0;
             for(var i = 0; i < items.length; ++i) {
                 var item = items[i];
-                var fontSize;
-                if(i == currentItem) {
-                    fontSize = mnuSelItemFontSize;
-                    tw = VS.computeTextWidth(item.text, fontSize + 'px Nobile');
+                var duration = 250;
+                var itemFontSize;
+                var itemOffset = 0;
+                var itemColor = 'black';
+                if(i == mnuSelectedItem) {
+                    itemFontSize = mnuSelItemFontSize;
+                    tw = VS.computeTextWidth(item.text, itemFontSize + 'px Nobile');
                     offset = x + tw/2;
+                } else 
+                if(i == mnuHoverItem) {
+                    tw = VS.computeTextWidth(item.text, mnuItemFontSize + 'px Nobile');
+                    itemFontSize = mnuHovItemFontSize;
+                    itemOffset = (tw - VS.computeTextWidth(item.text, itemFontSize + 'px Nobile'))/2;
+                    itemColor = '#CE173E';
+                    duration = 150;
                 } else {
-                    fontSize = mnuItemFontSize;
-                    tw = VS.computeTextWidth(item.text, fontSize + 'px Nobile');
+                    itemFontSize = mnuItemFontSize;
+                    tw = VS.computeTextWidth(item.text, itemFontSize + 'px Nobile');
                 }
-                //var inst = d3.select(this);
                 var itm = mnuMenuMain.select('.item-'+i).selectAll('text');
                 itm.transition()
-                    .duration(350)
-                    .attr('x', x)
-                    .style('font-size', fontSize+'px');
+                    .duration(duration)
+                    .attr('x', (x + itemOffset))
+                    .attr('fill', itemColor)
+                    .style('font-size', itemFontSize+'px');
                 x += (tw + mnuSeparation);
             }
             return {'offset': offset};
@@ -82,11 +83,11 @@
                     .attr('y', 0)
                     .style('font-family','Nobile')
                     .style('font-weight', 'bold')
-                    .style("filter", "url(#drop-shadow)")
+                    .style("filter", "url(#drop-shadow-text)")
                     .text(item.text)
+                    .attr('cursor', 'pointer')
                     .attr('class', 'vs-menup-item-text');
             items.push(item);
-            menu.updateMenu();
             /*menuG.append("foreignObject")
                     .attr("width", 200)
                     .attr("height", 50)
@@ -102,11 +103,62 @@
                           .attr("height", 50);*/
         }
 
-        menu.setupMenuRendering = function() {
-            SVGMenu = mnuDivMenuSVG.append('svg')
-                        .style('background','white');
+        function setupFilters() {
+            // filters go in defs element
+            var defs = SVGMenu.append("defs");
 
-            layBorderPath = SVGMenu.append('rect')
+            // create filter with id #drop-shadow
+            // height=110% so that the shadow is not clipped
+            var mnuFilter = defs.append("filter")
+                .attr("id", "drop-shadow-text")
+                .attr("height", "110%");
+             
+            // SourceAlpha refers to opacity of graphic that this filter will be applied to
+            // convolve that with a Gaussian with standard deviation 3 and store result
+            // in blur
+            mnuFilter.append("feGaussianBlur")
+               .attr("in", "SourceAlpha")
+               .attr("stdDeviation", 3)
+               .attr("result", "blur");
+            
+            // translate output of Gaussian blur to the right and downwards with 2px
+            // store result in offsetBlur
+            mnuFilter.append("feOffset")
+                .attr("in", "blur")
+                .attr("dx", 0)
+                .attr("dy", 0)
+                .attr("result", "offsetBlur");
+
+            mnuFilter.append("feFlood")
+                .attr("in", "offsetBlur")
+                .attr("flood-color", "#3d3d3d")
+                .attr("flood-opacity", "0.5")
+                .attr("result", "offsetColor");
+            mnuFilter.append("feComposite")
+                .attr("in", "offsetColor")
+                .attr("in2", "offsetBlur")
+                .attr("operator", "in")
+                .attr("result", "offsetBlur");
+
+            // overlay original SourceGraphic over translated blurred opacity by using
+            // feMerge filter. Order of specifying inputs is important!
+            var feMerge = mnuFilter.append("feMerge");
+             
+            feMerge.append("feMergeNode")
+                .attr("in", "offsetBlur")
+            feMerge.append("feMergeNode")
+                .attr("in", "SourceGraphic");
+        }
+
+
+        menu.setupMenuRendering = function() {
+
+            SVGMenu = mnuDivMenuSVG.append('svg')
+                       .style('background','white');
+
+            setupFilters();
+
+            mnuBorderPath = SVGMenu.append('rect')
                 .attr('x', 0)
                 .attr('y', 0)
                 .attr('height', VS.SVGMenuHeight)
@@ -127,6 +179,12 @@
                         {'text':'search', 'pos':3, 'form':null}];
             for(it in menuItems) {
                 menu.addMenuItem(menuItems[it]);
+                var r = menu.updateMenu();
+
+                mnuMenuMain.transition()
+                    .duration(350)
+                    .attr('transform', 'translate('+(VS.SVGWidth/2-r.offset)+','
+                                                   +(VS.SVGMenuHeight/2+mnuItemFontSize/2)+')');
             }
 /*                  
             var menuData = mnuMenuMain.selectAll('.vs-menu-item')
