@@ -1,6 +1,5 @@
 (function() {
     function menu() {
-        var mnuMenuMain;
         var mnuDivMenuSVG = d3.select('#div_menu_svg');
         var SVGMenu;
  
@@ -28,19 +27,24 @@
         menu.onMenuMouseClick = function() {
             var i = d3.select(this);
             mnuSelectedItem = this.attributes.item_index.value;
+            if(mnuSelectedItem == 0) {
+                xOffset = VS.SVGWidth/2;
+            } else {
+                xOffset = -VS.SVGWidth;
+            }
+            VS.layMain.transition()
+                    .duration(550)
+                    .attr('transform', 'translate('+xOffset+','+VS.SVGHeight/2+')');
             var r = menu.updateMenu();
-            mnuMenuMain.transition()
-                .duration(350)
-                .attr('transform', 'translate('+(VS.SVGWidth/2-r.offset)+','
-                                               +(VS.SVGMenuHeight/2+mnuItemFontSize/2)+')');
         }
 
         menu.updateMenu = function() {
             var x = 0;
             var offset = 0;
+            var xCoords = [];
+            var duration = 450;
             for(var i = 0; i < items.length; ++i) {
                 var item = items[i];
-                var duration = 250;
                 var itemFontSize;
                 var itemOffset = 0;
                 var itemColor = 'black';
@@ -59,19 +63,31 @@
                     itemFontSize = mnuItemFontSize;
                     tw = VS.computeTextWidth(item.text, itemFontSize + 'px Nobile');
                 }
-                var itm = mnuMenuMain.select('.item-'+i).selectAll('text');
-                itm.transition()
-                    .duration(duration)
-                    .attr('x', (x + itemOffset))
-                    .attr('fill', itemColor)
-                    .style('font-size', itemFontSize+'px');
+                xCoords.push({'x':x + itemOffset, 'color': itemColor, 'size': itemFontSize});
                 x += (tw + mnuSeparation);
+            }
+
+            for(var i = 0; i < items.length; ++i) {
+                var itm = VS.mnuMain.selectAll('.item-'+i);
+                var itmText = itm.selectAll('text');
+                itmText.transition()
+                    .duration(duration)
+                    .attr('x', (xCoords[i].x - offset))
+                    .attr('fill', xCoords[i].color)
+                    .style('font-size', xCoords[i].size+'px');
+
+                var itmSearch = itm.selectAll(function() { 
+                            return this.getElementsByTagName("foreignObject"); 
+                        });
+                itmSearch.transition()
+                    .duration(duration)
+                    .attr('x', (xCoords[i].x - offset));
             }
             return {'offset': offset};
         }
 
         menu.addMenuItem = function(item) {
-            var menuG = mnuMenuMain
+            var menuG = VS.mnuMain
                             .append('g')
                               .attr('class', 'vs-menu-item item-'+items.length)
                               .attr('item_index', items.length)
@@ -79,28 +95,31 @@
                               .on("mouseenter", onMenuMouseIn)
                               .on("mouseleave", onMenuMouseOut);
 
-            menuG.append('text')
-                    .attr('y', 0)
-                    .style('font-family','Nobile')
-                    .style('font-weight', 'bold')
-                    .style("filter", "url(#drop-shadow-text)")
-                    .text(item.text)
-                    .attr('cursor', 'pointer')
-                    .attr('class', 'vs-menup-item-text');
+            if(item.search) {
+                menuG.append('foreignObject')
+                        //.attr('width', 250)
+                        //.attr('height', 25)
+                        .attr('x', 0)
+                        .attr('y', 0)
+                        //.style('opacity',  1)
+                            .append('xhtml:div')
+                                //.attr('class', 'input-group')
+                                //.style('display', 'none')
+                                .html('<div class="input-group search-group"><input type="text" class="center-block form-control input-sm"' +
+                                       'title="Search versus." placeholder="search versus...">' + 
+                                       '<span class="input-group-btn"><button class="btn btn-sm btn-primary"' +
+                                       'type="button">go</button></span></div>');
+            } else {
+                menuG.append('text')
+                        .attr('y', 0)
+                        .style('font-family','Nobile')
+                        .style('font-weight', 'bold')
+                        .style("filter", "url(#drop-shadow-text)")
+                        .text(item.text)
+                        .attr('cursor', 'pointer')
+                        .attr('class', 'vs-menup-item-text');
+            }
             items.push(item);
-            /*menuG.append("foreignObject")
-                    .attr("width", 200)
-                    .attr("height", 50)
-                    .attr("x", 500)
-                    .attr("y", 5)
-                      .append("xhtml:input")
-                          .style('font', '14px \'Nobile\'')
-                          //.html('<h1>An HTML Foreign Object in SVG</h1>')
-                          .attr('type', 'text')
-                          .attr('class', 'center-block form-control input-lg')
-                          .attr('title', 'Search versus.')
-                          .attr('placeholder', 'search versus...')
-                          .attr("height", 50);*/
         }
 
         function setupFilters() {
@@ -166,28 +185,28 @@
                 .style('fill', 'transparent')
                 .on('click', function() {console.log('menu_bla');});
 
-            mnuMenuMain = SVGMenu.attr('width',  VS.SVGWidth)
+            VS.mnuMain = SVGMenu.attr('width',  VS.SVGWidth)
                          .attr('height', VS.SVGMenuHeight)
                          .append('g')
                             .attr('transform', 'translate('+VS.SVGWidth/2+','
                                                            +(VS.SVGMenuHeight/2+mnuItemFontSize/2)+')')
                             .attr('class', 'vs-menu-g');
             var menuItems = [
-                        {'text':'local', 'pos':1, 'form':null},
-                        {'text':'favourites', 'pos':2, 'form':null},
-                        {'text':'world', 'pos':0, 'form':null},
-                        {'text':'search', 'pos':3, 'form':null}];
+                        {'text':'world', 'pos':0},
+                        {'text':'local', 'pos':1},
+                        {'text':'favourites', 'pos':2},
+                        {'text':'search', 'pos':3}];//, 'search':true}];
             for(it in menuItems) {
                 menu.addMenuItem(menuItems[it]);
                 var r = menu.updateMenu();
 
-                mnuMenuMain.transition()
-                    .duration(350)
-                    .attr('transform', 'translate('+(VS.SVGWidth/2-r.offset)+','
-                                                   +(VS.SVGMenuHeight/2+mnuItemFontSize/2)+')');
+                //VS.mnuMain.transition()
+                //    .duration(350)
+                //    .attr('transform', 'translate('+(VS.SVGWidth/2-r.offset)+','
+                //                                   +(VS.SVGMenuHeight/2+mnuItemFontSize/2)+')');
             }
 /*                  
-            var menuData = mnuMenuMain.selectAll('.vs-menu-item')
+            var menuData = VS.mnuMain.selectAll('.vs-menu-item')
                             .data(menu, function(d) { return d.pos; });
             var menuG = menuData
                           .enter()

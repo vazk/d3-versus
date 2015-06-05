@@ -346,7 +346,6 @@ window.onload = function() {
   var layGradientLeft;
   var layGradiendRight;
   var layFfilter;
-  var layMain;
 
   function setupRendering() {
 
@@ -450,7 +449,7 @@ window.onload = function() {
           .attr("in", "SourceGraphic");
 
 
-      layMain = SVGCloud.attr('width',  VS.SVGWidth)
+      VS.layMain = SVGCloud.attr('width',  VS.SVGWidth)
                    .attr('height', VS.SVGHeight)
                    .append('g')
                       .attr('transform', 'translate('+VS.SVGWidth/2+','+VS.SVGHeight/2+')')
@@ -481,7 +480,7 @@ window.onload = function() {
 
       //for(var a = 0; a < vsData.length; ++a) console.log('upd: ', vsData[a].classname);
 
-      var vs_rectdata = layMain.selectAll('.vs-block')
+      var vs_rectdata = VS.layMain.selectAll('.vs-block')
                       .data(vsData, function(d) { return d.classname; });
 
 
