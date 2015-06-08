@@ -1,5 +1,6 @@
 (function() {
     function menu() {
+        var mnuMain = null;
         var mnuDivMenuSVG = d3.select('#div_menu_svg');
         var SVGMenu;
  
@@ -32,7 +33,7 @@
             } else {
                 xOffset = -VS.SVGWidth;
             }
-            VS.layMain.transition()
+            VS.layout.layMain.transition()
                     .duration(550)
                     .attr('transform', 'translate('+xOffset+','+VS.SVGHeight/2+')');
             var r = menu.updateMenu();
@@ -68,7 +69,7 @@
             }
 
             for(var i = 0; i < items.length; ++i) {
-                var itm = VS.mnuMain.selectAll('.item-'+i);
+                var itm = mnuMain.selectAll('.item-'+i);
                 var itmText = itm.selectAll('text');
                 itmText.transition()
                     .duration(duration)
@@ -87,7 +88,7 @@
         }
 
         menu.addMenuItem = function(item) {
-            var menuG = VS.mnuMain
+            var menuG = mnuMain
                             .append('g')
                               .attr('class', 'vs-menu-item item-'+items.length)
                               .attr('item_index', items.length)
@@ -185,7 +186,7 @@
                 .style('fill', 'transparent')
                 .on('click', function() {console.log('menu_bla');});
 
-            VS.mnuMain = SVGMenu.attr('width',  VS.SVGWidth)
+            mnuMain = SVGMenu.attr('width',  VS.SVGWidth)
                          .attr('height', VS.SVGMenuHeight)
                          .append('g')
                             .attr('transform', 'translate('+VS.SVGWidth/2+','
@@ -194,19 +195,20 @@
             var menuItems = [
                         {'text':'world', 'pos':0},
                         {'text':'local', 'pos':1},
-                        {'text':'favourites', 'pos':2},
-                        {'text':'search', 'pos':3}];//, 'search':true}];
+                        {'text':'random', 'pos':2},
+                        {'text':'favourites', 'pos':3},
+                        {'text':'search', 'pos':4}];//, 'search':true}];
             for(it in menuItems) {
                 menu.addMenuItem(menuItems[it]);
                 var r = menu.updateMenu();
 
-                //VS.mnuMain.transition()
+                //mnuMain.transition()
                 //    .duration(350)
                 //    .attr('transform', 'translate('+(VS.SVGWidth/2-r.offset)+','
                 //                                   +(VS.SVGMenuHeight/2+mnuItemFontSize/2)+')');
             }
 /*                  
-            var menuData = VS.mnuMain.selectAll('.vs-menu-item')
+            var menuData = mnuMain.selectAll('.vs-menu-item')
                             .data(menu, function(d) { return d.pos; });
             var menuG = menuData
                           .enter()
@@ -243,7 +245,5 @@
         }
         return d3.rebind(menu, event, "on");
     }
-
-    if (typeof module === "object" && module.exports) module.exports = menu;
-    else (VS || (VS = {})).menu = menu;
+    (VS || (VS = {})).menu = menu;
 })();

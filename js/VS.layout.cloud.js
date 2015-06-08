@@ -1,7 +1,8 @@
 // Word cloud layout by Jason Davies, http://www.jasondavies.com/word-cloud/
 // Algorithm due to Jonathan Feinberg, http://static.mrfeinberg.com/bv_ch03.pdf
 (function() {
-    function cloud() {
+    function layout() {
+        var layMain = null;
         var size = null;
         var text = cloudText;
         var padding = cloudPadding;
@@ -11,19 +12,19 @@
         var placement_board = [];
         var placement_bounds = null;
         //var placement_tags = [];
-        var cloud = {};
+        var layout = {};
 
-        cloud.start = function() {
+        layout.start = function() {
             if (timer) {
                 clearInterval(timer);
             }
             timer = setInterval(this.step, 0);
             this.step();
 
-            return cloud;
+            return layout;
         }
         
-        cloud.computeCenter = function() {
+        layout.computeCenter = function() {
             var total_weight = 0;
             var x = 0;
             var y = 0;
@@ -39,15 +40,15 @@
             return {'x': x, 'y': y};
         }
 
-        cloud.setSize = function(s) {
+        layout.setSize = function(s) {
             size = s;
         }
 
-        cloud.getData = function() {
+        layout.getData = function() {
             return data;
         }
 
-        cloud.setData = function(blocks) {
+        layout.setData = function(blocks) {
             blocks.sort(function(a, b) { 
                           return b.dim - a.dim; 
                         });
@@ -60,7 +61,7 @@
                 });
         };
 
-        cloud.removeData = function(d) {
+        layout.removeData = function(d) {
             for(var i = 0; i < data.length; ++i) {
                 var dd = data[i];
                 if(dd.classname === d.classname) {
@@ -71,26 +72,26 @@
             }
         }
 
-        cloud.getSize = function() {
+        layout.getSize = function() {
             return size;
         }
 
-        cloud.getBlockHalo = function() {
+        layout.getBlockHalo = function() {
             return block_halo;
         }
 
-        cloud.runCompaction = function() {
+        layout.runCompaction = function() {
             function getx(d) { return d.x; }
             function getw(d) { return d.w; }
             function gety(d) { return d.y; }
             function geth(d) { return d.h; }
             function setx(d, x) { return d.x = x; }
             function sety(d, y) { return d.y = y; }
-            cloud.randomBla(getx, getw, gety, geth, setx);
-            cloud.randomBla(gety, geth, getx, getw, sety);
-            cloud.randomBla(getx, getw, gety, geth, setx);
-            cloud.randomBla(gety, geth, getx, getw, sety);
-            var c = cloud.computeCenter();
+            layout.randomBla(getx, getw, gety, geth, setx);
+            layout.randomBla(gety, geth, getx, getw, sety);
+            layout.randomBla(getx, getw, gety, geth, setx);
+            layout.randomBla(gety, geth, getx, getw, sety);
+            var c = layout.computeCenter();
             var sc = {'x': size[0] >> 1, 'y': size[0] >> 1};
             for(var i = 0; i < data.length; ++i) {
                 var dd = data[i];
@@ -99,7 +100,7 @@
             }
         }
 
-        cloud.randomBla = function(fcoorda, fsizea, fcoordb, fsizeb, fsetcoorda) {
+        layout.randomBla = function(fcoorda, fsizea, fcoordb, fsizeb, fsetcoorda) {
             var g = d3.select(".vs-main-g");
 
             /*function joinCenters(da, db) {
@@ -197,7 +198,7 @@
             }
         }
 
-        cloud.addBlock = function(d, max_tries) {
+        layout.addBlock = function(d, max_tries) {
             d.w = d.dim;
             d.h = d.dim*0.5;
             d.padding = 5;
@@ -220,7 +221,7 @@
             } 
             return false;
         }
-        cloud.rePlace = function(max_tries) {
+        layout.rePlace = function(max_tries) {
             placement_board = [];
             placement_bounds = null;
             for(var i = 0; i < data.length; ++i) {
@@ -285,31 +286,31 @@
             return false;
         }
 
-        cloud.size = function(x) {
+        layout.size = function(x) {
             if (!arguments.length) return size;
             size = [+x[0], +x[1]];
             return cloud;
         };
 
-        cloud.text = function(x) {
+        layout.text = function(x) {
             if (!arguments.length) return text;
             text = d3.functor(x);
             return cloud;
         };
 
-        cloud.spiral = function(x) {
+        layout.spiral = function(x) {
             if (!arguments.length) return spiral;
             spiral = spirals[x + ""] || x;
             return cloud;
         };
 
-        cloud.padding = function(x) {
+        layout.padding = function(x) {
             if (!arguments.length) return padding;
             padding = d3.functor(x);
             return cloud;
         };
 
-        return d3.rebind(cloud, event, "on");
+        return d3.rebind(layout, event, "on");
     }
 
     function cloudText(d) {
@@ -398,8 +399,7 @@
             rectangular: rectangularSpiral
         };
 
-    if (typeof module === "object" && module.exports) module.exports = cloud;
-    else (VS.layout || (VS.layout = {})).cloud = cloud;
+    (VS || (VS = {})).layout = layout;
 })();
 
 
