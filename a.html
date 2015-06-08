@@ -17,7 +17,7 @@
 <script src="lib/d3/d3.js"></script>
 <script src="js/VS.js"></script>
 <script src="js/VS.menu.js"></script>
-<script src="js/VS.layout.cloud.js"></script>
+<script src="js/VS.layout.js"></script>
 <script src="js/imgurls.js"></script>
 
 
@@ -64,7 +64,7 @@ window.onload = function() {
   var fill = d3.scale.category20();
 
   VS.SVGHeight = window.innerHeight * 0.6;
-  VS.SVGWidth = document.getElementById("div_svg").clientWidth;
+  VS.SVGWidth = Math.min(document.getElementById("div_svg").clientWidth, 1024);
   VS.SVGMenuHeight = 70;
 
   var divCloudSVG = d3.select("#div_svg");
@@ -668,6 +668,7 @@ window.onload = function() {
       console.log('after place: ', inputData.length, 'placed: ', vsCloud.getData().length);
       vsCloud.runCompaction();
       setupRendering();
+      vsMenu.setMaxMode();
       vsMenu.setupMenuRendering();
       updateRendering(vsCloud.getData());
       //vsCloud.setData(vs_data);

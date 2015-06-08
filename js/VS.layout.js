@@ -11,18 +11,8 @@
         var data = [];
         var placement_board = [];
         var placement_bounds = null;
-        //var placement_tags = [];
         var layout = {};
 
-        layout.start = function() {
-            if (timer) {
-                clearInterval(timer);
-            }
-            timer = setInterval(this.step, 0);
-            this.step();
-
-            return layout;
-        }
         
         layout.computeCenter = function() {
             var total_weight = 0;
