@@ -8,24 +8,32 @@
         var mnuSelectedItem = 0;
         var mnuHoverItem = -1;
 
-        var mnuItemFontSize = 20;
-        var mnuSelItemFontSize = 50;
-        var mnuHovItemFontSize = 23 ;
-        var mnuSeparation = 45;
+        //var mnuOffset = {'x': 0, 'y': 0};
+        var mnuOffset = {'x': VS.SVGWidth/2, 'y': VS.SVGMenuHeight/2};
+        var mnuItemFontSize;
+        var mnuSelItemFontSize;
+        var mnuHovItemFontSize;
+        var mnuSeparation;
         var mnuBorderPath;
-
+        var mnuMouseInEnabled = true;
 
         function onMenuMouseIn() {
-            mnuHoverItem = this.attributes.item_index.value;
-            menu.updateMenu();
+            console.log('enabled ', mnuMouseInEnabled);
+            if(mnuMouseInEnabled) {
+                mnuHoverItem = this.attributes.item_index.value;
+                menu.updateMenu();
+            }
         }
 
         function onMenuMouseOut() {
-            mnuHoverItem = -1;
-            menu.updateMenu();
+            if(mnuMouseInEnabled) { 
+                mnuHoverItem = -1;
+                menu.updateMenu();
+            }
         }
 
         menu.onMenuMouseClick = function() {
+            mnuMouseInEnabled = false;
             var i = d3.select(this);
             mnuSelectedItem = this.attributes.item_index.value;
             if(mnuSelectedItem == 0) {
@@ -33,10 +41,33 @@
             } else {
                 xOffset = -VS.SVGWidth;
             }
-            VS.layout.layMain.transition()
+            VS.Layout.mainGroup().transition()
                     .duration(550)
-                    .attr('transform', 'translate('+xOffset+','+VS.SVGHeight/2+')');
+                    .attr('transform', 'translate('+xOffset+','+VS.SVGHeight/2+')')
+                    .each('end', function() { mnuMouseInEnabled = true;});
             var r = menu.updateMenu();
+        }
+
+        menu.setMaxMode = function() {
+            mnuItemFontSize = 20;
+            mnuSelItemFontSize = 50;
+            mnuHovItemFontSize = 23 ;
+            mnuSeparation = 35;
+        }
+
+
+        menu.setNormalMode = function() {
+            mnuItemFontSize = 18;
+            mnuSelItemFontSize = 40;
+            mnuHovItemFontSize = 21;
+            mnuSeparation = 25;
+        }
+
+        menu.setMiniMode = function() {
+            mnuItemFontSize = 15;
+            mnuSelItemFontSize = 28;
+            mnuHovItemFontSize = 17;
+            mnuSeparation = 15;
         }
 
         menu.updateMenu = function() {
@@ -70,10 +101,32 @@
 
             for(var i = 0; i < items.length; ++i) {
                 var itm = mnuMain.selectAll('.item-'+i);
+                if(items[i].search) {
+                    var itmSearch = itm.selectAll(function() { 
+                            return this.getElementsByTagName("foreignObject"); 
+                        });
+                    var itmSearchWrapper = itm.selectAll('rect');
+                    itmSearchWrapper.transition()
+                        .duration(duration)
+                        .attr('x', (mnuOffset.x + xCoords[i].x - offset));
+                    itmSearch.transition()
+                        .duration(duration)
+                        //.style('font-size', xCoords[i].size+'px')
+                        .attr('x', (mnuOffset.x + xCoords[i].x - offset) + 'px');
+                } else {
+                    var itmChildren = itm.selectAll('text');
+                    itmChildren.transition()
+                        .duration(duration)
+                        .attr('x', (mnuOffset.x + xCoords[i].x - offset))
+                        .attr('fill', xCoords[i].color)
+                        .style('font-size', xCoords[i].size+'px')
+                        .each('end', function() { mnuMouseInEnabled = true;});
+                }
+                /*
                 var itmText = itm.selectAll('text');
                 itmText.transition()
                     .duration(duration)
-                    .attr('x', (xCoords[i].x - offset))
+                    .attr('x', (mnuOffset.x + xCoords[i].x - offset))
                     .attr('fill', xCoords[i].color)
                     .style('font-size', xCoords[i].size+'px');
 
@@ -82,7 +135,12 @@
                         });
                 itmSearch.transition()
                     .duration(duration)
-                    .attr('x', (xCoords[i].x - offset));
+                    .attr('x', (mnuOffset.x + xCoords[i].x - offset));
+                itmSearch = itm.selectAll('rect');
+                itmSearch.transition()
+                    .duration(duration)
+                    .attr('x', (mnuOffset.x + xCoords[i].x - offset));
+                    */
             }
             return {'offset': offset};
         }
@@ -97,22 +155,35 @@
                               .on("mouseleave", onMenuMouseOut);
 
             if(item.search) {
+                menuG.append('rect')
+                        .attr('x', mnuOffset.x)
+                        .attr('y', mnuOffset.y-40)
+                        .attr('width', 200)
+                        .attr('height', 60)
+                        .attr('class', 'search-child')
+                        .style('fill', 'red');
                 menuG.append('foreignObject')
-                        //.attr('width', 250)
-                        //.attr('height', 25)
-                        .attr('x', 0)
-                        .attr('y', 0)
+                        .attr('width', 60)
+                        .attr('height', 25)
+                        .attr('x', mnuOffset.x + 'px')
+                        .attr('y', (mnuOffset.y - 15) + 'px')
+                        .attr('class', 'search-child')
                         //.style('opacity',  1)
                             .append('xhtml:div')
                                 //.attr('class', 'input-group')
                                 //.style('display', 'none')
-                                .html('<div class="input-group search-group"><input type="text" class="center-block form-control input-sm"' +
+                                .html('<div class="input-group search-group"><input type="text"' +
+                                       'title="Search versus." placeholder="search versus...">' + 
+                                       '<span class="input-group-btn"><button' +
+                                       'type="button">go</button></span></div>');
+                                /*.html('<div class="input-group search-group"><input type="text" class="center-block form-control input-sm"' +
                                        'title="Search versus." placeholder="search versus...">' + 
                                        '<span class="input-group-btn"><button class="btn btn-sm btn-primary"' +
-                                       'type="button">go</button></span></div>');
+                                       'type="button">go</button></span></div>');*/
             } else {
                 menuG.append('text')
-                        .attr('y', 0)
+                        .attr('x', mnuOffset.x)
+                        .attr('y', mnuOffset.y + 10)
                         .style('font-family','Nobile')
                         .style('font-weight', 'bold')
                         .style("filter", "url(#drop-shadow-text)")
@@ -189,8 +260,8 @@
             mnuMain = SVGMenu.attr('width',  VS.SVGWidth)
                          .attr('height', VS.SVGMenuHeight)
                          .append('g')
-                            .attr('transform', 'translate('+VS.SVGWidth/2+','
-                                                           +(VS.SVGMenuHeight/2+mnuItemFontSize/2)+')')
+                            //.attr('transform', 'translate('+VS.SVGWidth/2+','
+                            //                               +(VS.SVGMenuHeight/2+mnuItemFontSize/2)+')')
                             .attr('class', 'vs-menu-g');
             var menuItems = [
                         {'text':'world', 'pos':0},
