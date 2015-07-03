@@ -17,6 +17,8 @@
         var mnuBorderPath;
         var mnuMouseInEnabled = true;
 
+        var onMenuItemChanged = null;
+
         function onMenuMouseIn() {
             console.log('enabled ', mnuMouseInEnabled);
             if(mnuMouseInEnabled) {
@@ -35,17 +37,10 @@
         menu.onMenuMouseClick = function() {
             mnuMouseInEnabled = false;
             var i = d3.select(this);
+            var oldSelectedItem = mnuSelectedItem;
             mnuSelectedItem = this.attributes.item_index.value;
-            if(mnuSelectedItem == 0) {
-                xOffset = VS.SVGWidth/2;
-            } else {
-                xOffset = -VS.SVGWidth;
-            }
-            VS.Layout.mainGroup().transition()
-                    .duration(550)
-                    .attr('transform', 'translate('+xOffset+','+VS.SVGHeight/2+')')
-                    .each('end', function() { mnuMouseInEnabled = true;});
             var r = menu.updateMenu();
+            onMenuItemChanged(oldSelectedItem, mnuSelectedItem);
         }
 
         menu.setMaxMode = function() {
@@ -242,7 +237,9 @@
         }
 
 
-        menu.setupMenuRendering = function() {
+        menu.setupMenuRendering = function(menuItemChangeCB) {
+
+            onMenuItemChanged = menuItemChangeCB
 
             SVGMenu = mnuDivMenuSVG.append('svg')
                        .style('background','white');

@@ -12,9 +12,8 @@
 <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Paytone+One" />
 <link rel="stylesheet" type="text/css" href="a.css">
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>-->
 <script src="lib/d3/d3.js"></script>
+<script src="lib/d3/d3-transform.js"></script>
 <script src="js/VS.js"></script>
 <script src="js/VS.menu.js"></script>
 <script src="js/VS.layout.js"></script>
@@ -71,6 +70,7 @@ window.onload = function() {
   var vsLayout = VS.Layout;
   var vsMenu = VS.menu();
 
+  var svgLayout = null;
   //var inputData = [];
   var vs_rectdata = [];
   var vs_rects = [];
@@ -86,24 +86,8 @@ window.onload = function() {
     }
 
 
-  function startAll() {
-      var iid = Math.floor(Math.random()*240);
-      inputData = [
-            "Hello", "world", "normally", "you", "want", "more", "words",
-            "Hello", "world", "normally", "you", "want", "more", "words",
-            "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
-            "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
-            return {text: d, 
-                    dim: 50 + Math.random() * 140, 
-                    img_left: imgurls[iid++],
-                    img_right: imgurls[iid++],
-                    rat_left: Math.floor(Math.random()*200),
-                    rat_right: Math.floor(Math.random()*200),
-                    classname: stringGen(8)};
-          }).sort(function(a, b) { return b.dim - a.dim; });
-      vsLayout.resize([VS.SVGWidth, VS.SVGHeight]);
-
-      console.log('total: ', inputData.length);
+  function showLayout(inputData) {
+      console.log('showing total: ', inputData.length);
 
       for(var i = 0; i < inputData.length;) {
           var d = inputData[i];
@@ -112,10 +96,78 @@ window.onload = function() {
       }
       console.log('after place: ', inputData.length, 'placed: ', vsLayout.getData().length);
       vsLayout.compact();
-      vsLayout.setup();
-      vsMenu.setMaxMode();
-      vsMenu.setupMenuRendering();
       vsLayout.update(vsLayout.getData());
+  }
+
+  function startAll() {
+      vsMenu.setMaxMode();
+      vsMenu.setupMenuRendering(onMenuItemChanged);
+
+      svgLayout = d3.select('#div_svg').append('svg')
+                      .style('background','white');
+
+      vsLayout.resize([VS.SVGWidth, VS.SVGHeight]);
+      vsLayout.setup(svgLayout);
+
+      var iid = Math.floor(Math.random()*240);
+      inputData = [
+            "Hello", "world", "normally", "you", "want", "more", "words",
+            "Hello", "world", "normally", "you", "want", "more", "words",
+            "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
+            "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
+            return {text: d, 
+                    dim: 70 + Math.random() * 120, 
+                    img_left: imgurls[iid++],
+                    img_right: imgurls[iid++],
+                    rat_left: Math.floor(Math.random()*200),
+                    rat_right: Math.floor(Math.random()*200),
+                    classname: stringGen(8)};
+          }).sort(function(a, b) { return b.dim - a.dim; });
+      showLayout(inputData);
+  }
+
+  function onMenuItemChanged(oldId, newId) {
+      /*var xOffset = 0;
+      if(newId == 0) {
+          xOffset = VS.SVGWidth/2;
+      } else {
+          xOffset = -VS.SVGWidth;
+      }*/
+      var jump = newId - oldId;
+      var xOffset = newId == 0 ? VS.SVGWidth/2 : -jump * VS.SVGWidth;
+      
+      vsLayout.setCurrentGroupId(newId);
+      var newG = vsLayout.mainGroups()[newId];
+      var oldG = vsLayout.mainGroups()[oldId];
+      var inputData = null;
+      if(vsLayout.getData().length == 0) {
+        var iid = Math.floor(Math.random()*240);
+        inputData = [
+              "than", "this", "Hello", "world", "normally", "you", "want", "more", "words",
+              "Hello", "world", "normally", "you", "want", "more", "words"].map(function(d) {
+              return {text: d, 
+                      dim: 40 + Math.random() * 70, 
+                      img_left: imgurls[iid++],
+                      img_right: imgurls[iid++],
+                      rat_left: Math.floor(Math.random()*200),
+                      rat_right: Math.floor(Math.random()*200),
+                      classname: stringGen(8)};
+            }).sort(function(a, b) { return b.dim - a.dim; });
+      } else {
+          inputData = vsLayout.getData();
+      }
+      showLayout(inputData)
+
+      if(newG) newG.style('display', 'inline');
+          vsLayout.mainGroups()[0].transition()
+              .duration(550)
+              .attr('transform', 'translate('+xOffset+','+VS.SVGHeight/2+')')
+              .each('end', function() { 
+                      //mnuMouseInEnabled = true; // FIXME: enable this flag in VS.menu
+                      if(oldG) oldG.style('display', 'none');                        
+                  });
+
+      console.log('changing layout from ', oldId, '  to ', newId);
   }
 
   //Imgur.fetch(300, startAll);

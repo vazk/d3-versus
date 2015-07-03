@@ -1,24 +1,27 @@
 // Word cloud layout by Jason Davies, http://www.jasondavies.com/word-cloud/
 // Algorithm due to Jonathan Feinberg, http://static.mrfeinberg.com/bv_ch03.pdf
 (VS || (VS = {})).Layout = ( function(window, undefined) {
-    var mainG = null;
+    var mainGroups = [];
+    var currentGroup = -1;
+
     var svgLayout;
     var transitionDuration = 250;
     var size = null;
-    var text = cloudText;
-    var padding = cloudPadding;
+    //var text = cloudText;
+    //var padding = cloudPadding;
     var block_halo = [15, 15];
     var spiral = archimedeanSpiral;
-    var data = [];
-    var placement_board = [];
-    var placement_bounds = null;
+    //var data = [];
+    //var placement_board = [];
+    //var placement_bounds = null;
     
     function computeCenter() {
+        var mainG = mainGroups[currentGroup];
         var total_weight = 0;
         var x = 0;
         var y = 0;
-        for(var i = 0; i < data.length; ++i) {
-            var d = data[i];
+        for(var i = 0; i < mainG.data.length; ++i) {
+            var d = mainG.data[i];
             var weight = d.w*d.h;
             total_weight += weight;
             x += (d.x + d.w/2) * weight;
@@ -34,14 +37,15 @@
     }
 
     function getData() {
-        return data;
+        var mainG = mainGroups[currentGroup];
+        return mainG.data;
     }
 
     function setData(blocks) {
         blocks.sort(function(a, b) { 
                       return b.dim - a.dim; 
                     });
-        data = blocks.map(function(d, i) {
+        mainG.data = blocks.map(function(d, i) {
                 d.text = text.call(this, d, i);
                 d.padding = padding.call(this, d, i);
                 d.w = d.dim;
@@ -51,11 +55,12 @@
     };
 
     function removeData(d) {
-        for(var i = 0; i < data.length; ++i) {
-            var dd = data[i];
+        var mainG = mainGroups[currentGroup];
+        for(var i = 0; i < mainG.data.length; ++i) {
+            var dd = mainG.data[i];
             if(dd.classname === d.classname) {
                 console.log('removing id: ', i, ', ', dd.classname);
-                data.splice(i,1);
+                mainG.data.splice(i,1);
                 break;
             }
         }
@@ -76,21 +81,23 @@
         function geth(d) { return d.h; }
         function setx(d, x) { return d.x = x; }
         function sety(d, y) { return d.y = y; }
-        randomBla(getx, getw, gety, geth, setx);
-        randomBla(gety, geth, getx, getw, sety);
-        randomBla(getx, getw, gety, geth, setx);
-        randomBla(gety, geth, getx, getw, sety);
+
+        var mainG = mainGroups[currentGroup];// d3.select(".vs-main-g");
+        randomBla(mainG.data, getx, getw, gety, geth, setx);
+        randomBla(mainG.data, gety, geth, getx, getw, sety);
+        randomBla(mainG.data, getx, getw, gety, geth, setx);
+        randomBla(mainG.data, gety, geth, getx, getw, sety);
         var c = computeCenter();
         var sc = {'x': size[0] >> 1, 'y': size[0] >> 1};
-        for(var i = 0; i < data.length; ++i) {
-            var dd = data[i];
+        for(var i = 0; i < mainG.data.length; ++i) {
+            var dd = mainG.data[i];
             dd.x -= c.x;
             dd.y -= c.y;
         }
     }
 
-    function randomBla(fcoorda, fsizea, fcoordb, fsizeb, fsetcoorda) {
-        var g = d3.select(".vs-main-g");
+    function randomBla(data, fcoorda, fsizea, fcoordb, fsizeb, fsetcoorda) {
+        var mainG = mainGroups[currentGroup];// d3.select(".vs-main-g");
 
         var n = data.length;
         var i = -1;
@@ -178,44 +185,51 @@
     }
 
     function addData(d, max_tries) {
+        var mainG = mainGroups[currentGroup]; 
         d.w = d.dim;
         d.h = d.dim*0.5;
         d.padding = 5;
         for(var tries = 0; tries < max_tries; ++tries) {
             d.x = (size[0]>>1) + (Math.random() *20);
             d.y = (size[1]>>1) + (Math.random() *20);
-            if(place(placement_board, placement_bounds, d)) {
-                if (placement_bounds) {
-                    cloudBounds(placement_bounds, d);
+            if(place(mainG.placement_board, mainG.placement_bounds, d)) {
+                if (mainG.placement_bounds) {
+                    cloudBounds(mainG.placement_bounds, d);
                 } else {
-                    placement_bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
+                    mainG.placement_bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
                 }
                 // Temporary hack
                 d.x -= size[0] >> 1;
                 d.y -= size[1] >> 1;
-                data.push(d);
+                mainG.data.push(d);
                 //cloud.runCompaction();
                 return true;
             }
         } 
         return false;
     }
+
+    function setCurrentGroupId(grId) {
+        currentGroup = grId;
+    }
+
     function rePlace(max_tries) {
-        placement_board = [];
-        placement_bounds = null;
-        for(var i = 0; i < data.length; ++i) {
-            var d = data[i];
+        var mainG = mainGroups[currentGroup]; 
+        mainG.placement_board = [];
+        mainG.placement_bounds = null;
+        for(var i = 0; i < mainG.data.length; ++i) {
+            var d = mainG.data[i];
             console.log('replacing: ', d.classname);  
             d.w = d.dim;
             d.h = d.dim*0.5;
             for(var tries = 0; tries < max_tries; ++tries) {
                 d.x = (size[0]>>1);
                 d.y = (size[1]>>1);
-                if(place(placement_board, placement_bounds, d)) {
-                    if (placement_bounds) {
-                        cloudBounds(placement_bounds, d);
+                if(place(mainG.placement_board, mainG.placement_bounds, d)) {
+                    if(mainG.placement_bounds) {
+                        cloudBounds(mainG.placement_bounds, d);
                     } else {
-                        placement_bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
+                        mainG.placement_bounds = [{x: d.x, y: d.y}, {x: d.x + d.w, y: d.y + d.h}];
                     }
                     // Temporary hack
                     d.x -= size[0] >> 1;
@@ -289,24 +303,21 @@
         return cloud;
     };
 
-    function setupRendering() {
+    function setupRendering(svgLayout) {
         var layBorderPath;
         var layGradientLeft;
         var layGradiendRight;
         var layFilter;
-        
-        svgLayout = d3.select("#div_svg").append("svg")
-                      .style("background","white");
-    
-        layBorderPath = svgLayout.append("rect")
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("height", VS.SVGHeight)
-            .attr("width", VS.SVGWidth)
+
+        layBorderPath = svgLayout.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('height', VS.SVGHeight)
+            .attr('width', VS.SVGWidth)
             //.style("stroke", "green")
-            .style("fill", "none")
+            .style('fill', 'none')
             //.style("stroke-width", 2)
-            .on('click', function() {console.log('bla');})
+            //.on('click', function() {console.log('bla');})
             ;
   
         layGradientLeft = svgLayout.append("svg:defs")
@@ -395,12 +406,25 @@
             .attr("in", "SourceGraphic");
   
   
-        mainG = svgLayout.attr('width',  VS.SVGWidth)
+        var worldG = svgLayout.attr('width',  VS.SVGWidth)
                     .attr('height', VS.SVGHeight)
                     .append('g')
                         .attr('transform', 'translate('+VS.SVGWidth/2+','+VS.SVGHeight/2+')')
-                        .attr('class', 'vs-main-g');
-  
+                        .attr('class', 'vs-main-g-world');
+        worldG.data = [];
+        worldG.placement_board = [];
+        worldG.placement_bounds = null;
+        mainGroups.push(worldG);
+        var localG = svgLayout.attr('width',  VS.SVGWidth)
+                    .attr('height', VS.SVGHeight)
+                    .append('g')
+                        .attr('transform', 'translate('+VS.SVGWidth/2+','+VS.SVGHeight/2+')')
+                        .attr('class', 'vs-main-g-local');
+        localG.data = [];
+        localG.placement_board = [];
+        localG.placement_bounds = null;
+        mainGroups.push(localG);
+        currentGroup = 0;
     }
 
     function updateRendering(data) {
@@ -415,7 +439,7 @@
         var rat_w_halo = 13;
         var h_dim = 24;
         
-        var vs_rectdata = mainG.selectAll('.vs-block')
+        var vs_rectdata = mainGroups[currentGroup].selectAll('.vs-block')
                         .data(data, function(d) { return d.classname; });
   
   
@@ -648,7 +672,6 @@
     }
 
     function onMouseIn(d) {
-        console.log('m: ', d.classname);
         var wgain = 220-d.w;
         var hgain = 110-d.h;
         var xoff = wgain/2;
@@ -765,16 +788,32 @@
               .attr("x", function(d) { return x_rect + w_rect*0.9 - VS.computeTextWidth(d.rat_right.toString(), '16px Nobile') - 1; })
               .attr("y", function(d) { return y_rect + h_rect*0.87; })
               .style("font-size", function(d) { return 16+"px";});
-        
+        /*var grow_transform = d3.svg.transform()
+                .translate(function(d) { 
+                    var factor = 220/d.w;
+                    return [d.x * (1-factor), d.y*(1-factor)];
+                })
+                .scale(function(d) { 
+                    var factor = 220/d.w;
+                    return factor;
+                });
+        i.transition().duration(transitionDuration).attr('transform', grow_transform);*/
         i.moveToFront();
     }
 
     function onMouseOut(d) {
         var i = d3.select(this);
+        //i.transition().duration(transitionDuration).attr("transform","scale(1)");
         updateBlock(d, i);
     }
 
     function onCloseBlock(d) {
+        //var svgdoc = d.ownerDocument;
+        //var obj = svgdoc.getElementById(node);
+        //obj.setAttribute("display" , "none");
+        //mainG.style('display', 'none');
+        return;
+
         removeData(d);
 
         rePlace(3);
@@ -782,7 +821,7 @@
         
         for(var i = 0; i < inputData.length; ) {
             var d = inputData[i];
-            if(addBlock(d, 3) == false) break;
+            if(addData(d, 3) == false) break;
             inputData.splice(i,1);
         }
         console.log('after place #2: ', inputData.length, 'placed: ', getData().length);
@@ -917,7 +956,8 @@
 
         getData: getData,
         addData: addData,
-        mainGroup: function() { return mainG; },
+        setCurrentGroupId: setCurrentGroupId,
+        mainGroups: function() { return mainGroups; },
     };
     
 })(window);
