@@ -7,13 +7,13 @@
     var svgLayout;
     var transitionDuration = 250;
     var size = null;
-    //var text = cloudText;
-    //var padding = cloudPadding;
-    var block_halo = [15, 15];
+    var block_halo = [25, 25];
     var spiral = archimedeanSpiral;
-    //var data = [];
-    //var placement_board = [];
-    //var placement_bounds = null;
+    var layBorderPath;
+    var layGradientLeft;
+    var layGradiendRight;
+    var layFilter;
+    var worldG;
     
     function computeCenter() {
         var mainG = mainGroups[currentGroup];
@@ -82,7 +82,7 @@
         function setx(d, x) { return d.x = x; }
         function sety(d, y) { return d.y = y; }
 
-        var mainG = mainGroups[currentGroup];// d3.select(".vs-main-g");
+        var mainG = mainGroups[currentGroup];
         randomBla(mainG.data, getx, getw, gety, geth, setx);
         randomBla(mainG.data, gety, geth, getx, getw, sety);
         randomBla(mainG.data, getx, getw, gety, geth, setx);
@@ -217,11 +217,13 @@
         var mainG = mainGroups[currentGroup]; 
         mainG.placement_board = [];
         mainG.placement_bounds = null;
+        var success = false;
         for(var i = 0; i < mainG.data.length; ++i) {
             var d = mainG.data[i];
             console.log('replacing: ', d.classname);  
             d.w = d.dim;
             d.h = d.dim*0.5;
+            success = false;
             for(var tries = 0; tries < max_tries; ++tries) {
                 d.x = (size[0]>>1);
                 d.y = (size[1]>>1);
@@ -235,10 +237,24 @@
                     d.x -= size[0] >> 1;
                     d.y -= size[1] >> 1;
                     //cloud.runCompaction();
+                    success = true;
                     break;
                 }
             }
+            if(!success) {
+                var remaining = mainG.data.splice(i,mainG.data.length-i);
+                mainG.unplacedData = remaining.concat(mainG.unplacedData);
+                break;
+            }
         } 
+
+        if(success) {
+            for(var i = 0; i < mainG.unplacedData.length; ) {
+                var d = mainG.unplacedData[i];
+                if(addData(d, 3) == false) break;
+                mainG.unplacedData.splice(i,1);
+            }
+        }
         return false;
     }
 
@@ -303,17 +319,27 @@
         return cloud;
     };
 
-    function setupRendering(svgLayout) {
-        var layBorderPath;
-        var layGradientLeft;
-        var layGradiendRight;
-        var layFilter;
+    function resizeRendering(svgLayout, s) {
+        size = s;
+
+        layBorderPath
+            .attr('width', size[0])
+            .attr('height', size[1]);
+        svgLayout
+            .attr('width',  size[0])
+            .attr('height', size[1])
+        worldG
+            .attr('transform', 'translate('+ size[0]/2+','+size[1]/2+')')
+    }
+
+    function setupRendering(svgLayout, s, allData) {
+        size = s;
 
         layBorderPath = svgLayout.append('rect')
             .attr('x', 0)
             .attr('y', 0)
-            .attr('height', VS.SVGHeight)
-            .attr('width', VS.SVGWidth)
+            .attr('height', size[1])
+            .attr('width', size[0])
             //.style("stroke", "green")
             .style('fill', 'none')
             //.style("stroke-width", 2)
@@ -336,7 +362,7 @@
   
   
         layGradientLeft.append("svg:stop")
-            .attr("offset", "50%")
+            .attr("offset", "100%")
             .attr("stop-color", "#1BCB9D")//27 203 157
             .attr("stop-opacity", 1);
   
@@ -406,24 +432,17 @@
             .attr("in", "SourceGraphic");
   
   
-        var worldG = svgLayout.attr('width',  VS.SVGWidth)
-                    .attr('height', VS.SVGHeight)
+        worldG = svgLayout
+                    .attr('width',  size[0])
+                    .attr('height', size[1])
                     .append('g')
-                        .attr('transform', 'translate('+VS.SVGWidth/2+','+VS.SVGHeight/2+')')
+                        .attr('transform', 'translate('+ size[0]/2+','+size[1]/2+')')
                         .attr('class', 'vs-main-g-world');
         worldG.data = [];
+        worldG.unplacedData = allData;
         worldG.placement_board = [];
         worldG.placement_bounds = null;
         mainGroups.push(worldG);
-        var localG = svgLayout.attr('width',  VS.SVGWidth)
-                    .attr('height', VS.SVGHeight)
-                    .append('g')
-                        .attr('transform', 'translate('+VS.SVGWidth/2+','+VS.SVGHeight/2+')')
-                        .attr('class', 'vs-main-g-local');
-        localG.data = [];
-        localG.placement_board = [];
-        localG.placement_bounds = null;
-        mainGroups.push(localG);
         currentGroup = 0;
     }
 
@@ -812,22 +831,17 @@
         //var obj = svgdoc.getElementById(node);
         //obj.setAttribute("display" , "none");
         //mainG.style('display', 'none');
-        return;
-
-        removeData(d);
-
-        rePlace(3);
-        runCompaction();
-        
-        for(var i = 0; i < inputData.length; ) {
-            var d = inputData[i];
-            if(addData(d, 3) == false) break;
-            inputData.splice(i,1);
+        if(d) {
+            removeData(d);
         }
+
+        rePlace(1);
+        runCompaction();
+
         console.log('after place #2: ', inputData.length, 'placed: ', getData().length);
 
-        rePlace(3);
-        runCompaction();
+        //rePlace(1);
+        //runCompaction();
         var data = getData();
         updateRendering(data);
 
@@ -949,11 +963,11 @@
 
 
     return {
-        resize:  setSize,
+        resize:  resizeRendering,
         setup:   setupRendering,
         compact: runCompaction,
         update:  updateRendering,
-
+        replace: onCloseBlock,
         getData: getData,
         addData: addData,
         setCurrentGroupId: setCurrentGroupId,

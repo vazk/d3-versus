@@ -260,12 +260,7 @@
                             //.attr('transform', 'translate('+VS.SVGWidth/2+','
                             //                               +(VS.SVGMenuHeight/2+mnuItemFontSize/2)+')')
                             .attr('class', 'vs-menu-g');
-            var menuItems = [
-                        {'text':'world', 'pos':0},
-                        {'text':'local', 'pos':1},
-                        {'text':'random', 'pos':2},
-                        {'text':'favourites', 'pos':3},
-                        {'text':'search', 'pos':4}];//, 'search':true}];
+            var menuItems = [{'text':'search', 'pos':0, 'search':true}];
             for(it in menuItems) {
                 menu.addMenuItem(menuItems[it]);
                 var r = menu.updateMenu();
